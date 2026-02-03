@@ -55,6 +55,11 @@ for bar in bars.results ?? [] {
 - ``BarsQuery``
 - ``BarsResponse``
 
+### Protocols
+
+- ``APIQuery``
+- ``PaginatedResponse``
+
 ### Pagination
 
 - ``PaginationCursor``
