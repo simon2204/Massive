@@ -1,5 +1,5 @@
 {
-  "originHash" : "c0a4599e36c72f5ce0da2b77293d32ffba77389d0d7a587426834fcab71b748a",
+  "originHash" : "9a89aa05bedce37c76aa6c76e6e4773b0cca6fc4b17d8c092e1aa6e26efe616f",
   "pins" : [
     {
       "identity" : "fetch",
@@ -7,7 +7,7 @@
       "location" : "https://git.w-hs.de/Simon.Schoepke/fetch.git",
       "state" : {
         "branch" : "main",
-        "revision" : "6501fdf2e5f77caa16ddf611826e43b280929d0d"
+        "revision" : "04bf0d1da1b4006543e890c89cff7cceafbce99d"
       }
     },
     {
@@ -22,10 +22,10 @@
     {
       "identity" : "reerjson",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/reers/ReerJSON.git",
+      "location" : "https://git.w-hs.de/Simon.Schoepke/reerjson.git",
       "state" : {
-        "revision" : "d91a5556b6185bc6968d99fa91def73b31c58630",
-        "version" : "0.3.1"
+        "branch" : "main",
+        "revision" : "22de8b280447ba541db871682b0f79c27a0249db"
       }
     },
     {
