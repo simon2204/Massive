@@ -24,7 +24,7 @@ extension MassiveClient {
     /// }
     /// ```
     public func bars(_ query: BarsQuery) async throws -> BarsResponse {
-        try await fetch(path: query.pathComponents, queryItems: query.queryItems)
+        try await fetch(query)
     }
 
     /// Returns an async sequence that automatically paginates through all bar results.
@@ -50,11 +50,6 @@ extension MassiveClient {
     /// }
     /// ```
     public func allBars(_ query: BarsQuery) -> PaginatedSequence<BarsResponse, PaginationCursor<BarsQuery>> {
-        paginated(
-            query: query,
-            fetch: { try await self.bars($0) },
-            fetchPage: { try await self.fetch(url: $0) },
-            nextURL: { $0.nextUrl.flatMap { URL(string: $0) } }
-        )
+        paginated(query: query) { try await self.fetch($0) }
     }
 }

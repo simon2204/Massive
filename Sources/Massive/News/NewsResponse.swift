@@ -1,7 +1,7 @@
 import Foundation
 
 /// Response from the News endpoint.
-public struct NewsResponse: Codable, Sendable {
+public struct NewsResponse: Codable, PaginatedResponse {
     /// The total number of results for this request.
     public let count: Int
 

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Response from the Custom Bars (OHLC) endpoint.
-public struct BarsResponse: Codable, Sendable {
+public struct BarsResponse: Codable, PaginatedResponse {
     /// The exchange symbol that this item is traded under.
     public let ticker: String
 

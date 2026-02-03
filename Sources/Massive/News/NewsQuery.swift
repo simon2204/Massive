@@ -22,7 +22,9 @@ import Foundation
 ///     order: .desc
 /// )
 /// ```
-public struct NewsQuery: Sendable {
+public struct NewsQuery: APIQuery {
+    public var path: String { "/v2/reference/news" }
+
     /// Case-sensitive ticker symbol (e.g., "AAPL" for Apple Inc.).
     public var ticker: String?
 
@@ -100,7 +102,7 @@ public struct NewsQuery: Sendable {
         self.sort = sort
     }
 
-    var queryItems: [URLQueryItem] {
+    public var queryItems: [URLQueryItem]? {
         var items: [URLQueryItem] = []
 
         if let ticker { items.append(URLQueryItem(name: "ticker", value: ticker)) }
@@ -117,6 +119,6 @@ public struct NewsQuery: Sendable {
         if let limit { items.append(URLQueryItem(name: "limit", value: String(limit))) }
         if let sort { items.append(URLQueryItem(name: "sort", value: sort)) }
 
-        return items
+        return items.isEmpty ? nil : items
     }
 }

@@ -67,6 +67,10 @@ public struct MassiveClient: Sendable {
 
     // MARK: - Internal Fetch
 
+    func fetch<Query: APIQuery, Response: Decodable & Sendable>(_ query: Query) async throws -> Response {
+        try await fetch(path: query.path, queryItems: query.queryItems)
+    }
+
     func fetch<T: Decodable & Sendable>(
         path: String,
         queryItems: [URLQueryItem]? = nil
@@ -108,28 +112,40 @@ public struct MassiveClient: Sendable {
 
     // MARK: - Pagination Helper
 
-    func paginated<Response: Decodable & Sendable, Query>(
+    func paginated<Response: PaginatedResponse, Query: Sendable>(
         query: Query,
-        fetch: @escaping @Sendable (Query) async throws -> Response,
-        fetchPage: @escaping @Sendable (URL) async throws -> Response,
-        nextURL: @escaping @Sendable (Response) -> URL?
+        fetch: @escaping @Sendable (Query) async throws -> Response
     ) -> PaginatedSequence<Response, PaginationCursor<Query>> {
         PaginatedSequence(cursor: .initial(query)) { cursor in
             switch cursor {
             case .some(.initial(let q)):
                 return try await fetch(q)
             case .some(.next(let url)):
-                return try await fetchPage(url)
+                return try await self.fetch(url: url)
             case .none:
                 return try await fetch(query)
             }
         } next: { response in
-            nextURL(response).map { .next($0) }
+            response.nextUrl.flatMap { URL(string: $0) }.map { .next($0) }
         }
     }
 }
 
-// MARK: - Pagination Cursor
+// MARK: - Protocols
+
+/// A query that can be executed against the Massive API.
+public protocol APIQuery: Sendable {
+    /// The API endpoint path.
+    var path: String { get }
+    /// The query parameters.
+    var queryItems: [URLQueryItem]? { get }
+}
+
+/// A response that supports pagination via a next URL.
+public protocol PaginatedResponse: Decodable, Sendable {
+    /// The URL to fetch the next page of results, if available.
+    var nextUrl: String? { get }
+}
 
 /// Represents the current position in a paginated request sequence.
 ///

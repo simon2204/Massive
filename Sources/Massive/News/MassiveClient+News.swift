@@ -20,7 +20,7 @@ extension MassiveClient {
     /// }
     /// ```
     public func news(_ query: NewsQuery = NewsQuery()) async throws -> NewsResponse {
-        try await fetch(path: "/v2/reference/news", queryItems: query.queryItems)
+        try await fetch(query)
     }
 
     /// Returns an async sequence that automatically paginates through all news results.
@@ -41,11 +41,6 @@ extension MassiveClient {
     /// }
     /// ```
     public func allNews(_ query: NewsQuery = NewsQuery()) -> PaginatedSequence<NewsResponse, PaginationCursor<NewsQuery>> {
-        paginated(
-            query: query,
-            fetch: { try await self.news($0) },
-            fetchPage: { try await self.fetch(url: $0) },
-            nextURL: { $0.nextUrl.flatMap { URL(string: $0) } }
-        )
+        paginated(query: query) { try await self.fetch($0) }
     }
 }

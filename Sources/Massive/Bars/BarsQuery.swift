@@ -25,7 +25,7 @@ import Foundation
 ///     to: "2024-01-15"
 /// )
 /// ```
-public struct BarsQuery: Sendable {
+public struct BarsQuery: APIQuery {
     /// Case-sensitive ticker symbol (e.g., "AAPL" for Apple Inc.).
     public let ticker: String
 
@@ -94,11 +94,11 @@ public struct BarsQuery: Sendable {
         self.limit = limit
     }
 
-    var pathComponents: String {
+    public var path: String {
         "/v2/aggs/ticker/\(ticker)/range/\(multiplier)/\(timespan.rawValue)/\(from)/\(to)"
     }
 
-    var queryItems: [URLQueryItem]? {
+    public var queryItems: [URLQueryItem]? {
         var items: [URLQueryItem] = []
 
         if let adjusted { items.append(URLQueryItem(name: "adjusted", value: String(adjusted))) }

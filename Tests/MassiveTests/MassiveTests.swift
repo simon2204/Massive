@@ -102,7 +102,7 @@ struct MassiveClientTests {
             limit: 50
         )
 
-        let items = query.queryItems
+        let items = query.queryItems ?? []
         #expect(items.contains { $0.name == "ticker" && $0.value == "AAPL" })
         #expect(items.contains { $0.name == "published_utc.gte" && $0.value == "2024-01-01" })
         #expect(items.contains { $0.name == "limit" && $0.value == "50" })
@@ -159,7 +159,7 @@ struct MassiveClientTests {
             to: "2024-01-02"
         )
 
-        #expect(query.pathComponents == "/v2/aggs/ticker/AAPL/range/5/minute/2024-01-01/2024-01-02")
+        #expect(query.path == "/v2/aggs/ticker/AAPL/range/5/minute/2024-01-01/2024-01-02")
     }
 
     @Test("Bars query parameters")
