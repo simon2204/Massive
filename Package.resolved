@@ -1,6 +1,15 @@
 {
-  "originHash" : "9eeb5bb095a12e4d502d4be51233a074ff06957de0aba8328bc47e87ba3f70a9",
+  "originHash" : "c0a4599e36c72f5ce0da2b77293d32ffba77389d0d7a587426834fcab71b748a",
   "pins" : [
+    {
+      "identity" : "fetch",
+      "kind" : "remoteSourceControl",
+      "location" : "https://git.w-hs.de/Simon.Schoepke/fetch.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "6501fdf2e5f77caa16ddf611826e43b280929d0d"
+      }
+    },
     {
       "identity" : "jjliso8601dateformatter",
       "kind" : "remoteSourceControl",

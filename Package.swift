@@ -19,12 +19,14 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../Fetch"),
+        .package(url: "https://git.w-hs.de/Simon.Schoepke/fetch.git", branch: "main"),
     ],
     targets: [
         .target(
             name: "Massive",
-            dependencies: ["Fetch"]
+            dependencies: [
+                .product(name: "Fetch", package: "fetch")
+            ]
         ),
         .executableTarget(
             name: "MassiveDemo",

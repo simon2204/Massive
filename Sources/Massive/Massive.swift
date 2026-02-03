@@ -1,6 +1,39 @@
 import Fetch
 import Foundation
 
+/// A client for interacting with the Massive API.
+///
+/// `MassiveClient` provides methods for fetching market news and historical bar data.
+/// It handles authentication, rate limiting, and automatic retries.
+///
+/// ## Usage
+///
+/// ```swift
+/// let client = MassiveClient(apiKey: "your-api-key")
+///
+/// // Fetch news
+/// let news = try await client.news(NewsQuery(ticker: "AAPL"))
+///
+/// // Fetch bars
+/// let bars = try await client.bars(BarsQuery(
+///     ticker: "AAPL",
+///     from: "2024-01-01",
+///     to: "2024-01-31"
+/// ))
+/// ```
+///
+/// ## Pagination
+///
+/// For endpoints that return paginated results, use the `allNews` or `allBars` methods
+/// to automatically iterate through all pages:
+///
+/// ```swift
+/// for try await page in client.allNews(NewsQuery(ticker: "AAPL")) {
+///     for article in page.results {
+///         print(article.title)
+///     }
+/// }
+/// ```
 public struct MassiveClient: Sendable {
     let apiKey: String
     let baseURL: URL
@@ -10,6 +43,14 @@ public struct MassiveClient: Sendable {
 
     private let decoder = JSONDataDecoder()
 
+    /// Creates a new Massive API client.
+    ///
+    /// - Parameters:
+    ///   - apiKey: Your Massive API key for authentication.
+    ///   - baseURL: The base URL for API requests. Defaults to the Massive API endpoint.
+    ///   - session: The URLSession to use for network requests. Defaults to `.shared`.
+    ///   - rateLimiter: Optional rate limiter to control request frequency.
+    ///   - retry: Retry configuration for failed requests. Defaults to 3 attempts with 1 second base delay.
     public init(
         apiKey: String,
         baseURL: URL = URL(string: "https://api.massive.com")!,
@@ -90,14 +131,26 @@ public struct MassiveClient: Sendable {
 
 // MARK: - Pagination Cursor
 
+/// Represents the current position in a paginated request sequence.
+///
+/// Used internally by `PaginatedSequence` to track whether to use the initial query
+/// or follow a next page URL.
 public enum PaginationCursor<Query: Sendable>: Sendable {
+    /// The initial query to start pagination.
     case initial(Query)
+    /// A URL to fetch the next page of results.
     case next(URL)
 }
 
 // MARK: - Errors
 
+/// Errors that can occur when interacting with the Massive API.
 public enum MassiveError: Error, Sendable {
+    /// The server returned an invalid or unexpected response format.
     case invalidResponse
+    /// The server returned an HTTP error status code.
+    /// - Parameters:
+    ///   - statusCode: The HTTP status code (e.g., 401, 404, 500).
+    ///   - data: The response body data, which may contain error details.
     case httpError(statusCode: Int, data: Data)
 }
