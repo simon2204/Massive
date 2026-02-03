@@ -26,6 +26,10 @@ let package = Package(
             name: "Massive",
             dependencies: ["Fetch"]
         ),
+        .executableTarget(
+            name: "MassiveDemo",
+            dependencies: ["Massive"]
+        ),
         .testTarget(
             name: "MassiveTests",
             dependencies: ["Massive"]
