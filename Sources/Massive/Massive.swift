@@ -103,6 +103,12 @@ public struct MassiveClient: Sendable {
             throw MassiveError.invalidResponse
         }
 
+        // Sync rate limiter with API response headers
+        if let remainingStr = httpResponse.value(forHTTPHeaderField: "X-RateLimit-Remaining"),
+           let remaining = Int(remainingStr) {
+            rateLimiter?.setAvailableTokens(remaining)
+        }
+
         guard httpResponse.statusCode == 200 else {
             throw MassiveError.httpError(statusCode: httpResponse.statusCode, data: data)
         }
