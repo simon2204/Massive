@@ -1,6 +1,10 @@
 import Fetch
 import Foundation
 
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 /// A client for interacting with the Massive API.
 ///
 /// `MassiveClient` provides methods for fetching market news and historical bar data.
