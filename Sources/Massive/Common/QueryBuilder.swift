@@ -1,3 +1,4 @@
+import Fetch
 import Foundation
 
 /// A builder for constructing URL query items.
@@ -72,6 +73,15 @@ public struct QueryBuilder: Sendable {
     public mutating func add(_ name: String, _ value: Ticker?) -> Self {
         if let value {
             items.append(URLQueryItem(name: name, value: value.symbol))
+        }
+        return self
+    }
+
+    /// Adds a Timestamp parameter if not nil (as milliseconds since epoch).
+    @discardableResult
+    public mutating func add(_ name: String, _ value: Timestamp?) -> Self {
+        if let value {
+            items.append(URLQueryItem(name: name, value: String(value.millisecondsSinceEpoch)))
         }
         return self
     }

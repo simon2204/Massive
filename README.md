@@ -4,7 +4,7 @@ A Swift client for the Massive API providing access to financial market data.
 
 ## Features
 
-- **REST API**: Market news with sentiment analysis and historical OHLC bar data
+- **REST API**: Comprehensive stock market data, economic indicators, technical analysis, and more
 - **S3 Flat Files**: Bulk historical data via S3-compatible storage
 - Automatic pagination support
 - Rate limiting and retry logic
@@ -42,64 +42,106 @@ let client = MassiveClient(apiKey: "your-api-key")
 ### Fetching News
 
 ```swift
-// Fetch news for a specific ticker
-let news = try await client.news(NewsQuery(ticker: "AAPL", limit: 10))
-for article in news.results {
-    print("\(article.title) - \(article.publisher.name)")
+for try await page in client.news(NewsQuery(ticker: "AAPL", limit: 10)) {
+    for article in page.results ?? [] {
+        print("\(article.title) - \(article.publisher.name)")
+    }
 }
-
-// Fetch news with date filtering
-let query = NewsQuery(
-    publishedUtcGte: "2024-01-01",
-    publishedUtcLte: "2024-01-31",
-    order: .desc
-)
-let news = try await client.news(query)
 ```
 
 ### Fetching Bar Data
 
 ```swift
-// Fetch daily bars
-let bars = try await client.bars(BarsQuery(
+for try await page in client.bars(BarsQuery(
     ticker: "AAPL",
-    from: "2024-01-01",
-    to: "2024-01-31"
-))
-for bar in bars.results ?? [] {
-    print("Open: \(bar.o), Close: \(bar.c)")
-}
-
-// Fetch 5-minute bars
-let minuteBars = try await client.bars(BarsQuery(
-    ticker: "AAPL",
-    multiplier: 5,
-    timespan: .minute,
-    from: "2024-01-15",
-    to: "2024-01-15"
-))
-```
-
-### Pagination
-
-For endpoints that return paginated results, use the `allNews` or `allBars` methods to automatically iterate through all pages:
-
-```swift
-for try await page in client.allNews(NewsQuery(ticker: "AAPL")) {
-    for article in page.results {
-        print(article.title)
-    }
-}
-
-for try await page in client.allBars(BarsQuery(
-    ticker: "AAPL",
-    timespan: .minute,
     from: "2024-01-01",
     to: "2024-01-31"
 )) {
     for bar in page.results ?? [] {
-        print(bar.c)
+        print("Open: \(bar.o), Close: \(bar.c)")
     }
+}
+```
+
+### Real-Time Snapshots
+
+```swift
+// Get current market data for a ticker
+let snapshot = try await client.singleTickerSnapshot(SingleTickerSnapshotQuery(ticker: "AAPL"))
+print("Current price: \(snapshot.ticker?.day?.c ?? 0)")
+
+// Get top market movers
+let gainers = try await client.topMovers(TopMoversQuery(direction: .gainers))
+for mover in gainers.gainers ?? [] {
+    print("\(mover.ticker ?? ""): +\(mover.todaysChangePerc ?? 0)%")
+}
+```
+
+### Technical Indicators
+
+```swift
+// Simple Moving Average
+let sma = try await client.sma(SMAQuery(ticker: "AAPL", window: 50))
+
+// MACD
+let macd = try await client.macd(MACDQuery(ticker: "AAPL"))
+
+// RSI
+let rsi = try await client.rsi(RSIQuery(ticker: "AAPL", window: 14))
+```
+
+### Fundamentals
+
+```swift
+// Balance sheets
+let bs = try await client.balanceSheets(BalanceSheetsQuery(tickers: "AAPL"))
+
+// Income statements
+let income = try await client.incomeStatements(IncomeStatementsQuery(tickers: "AAPL"))
+
+// Financial ratios
+let ratios = try await client.ratios(RatiosQuery(ticker: "AAPL"))
+```
+
+### Corporate Actions
+
+```swift
+// Dividends
+let dividends = try await client.dividends(DividendsQuery(ticker: "AAPL"))
+
+// Stock splits
+let splits = try await client.splits(SplitsQuery(ticker: "AAPL"))
+
+// IPOs
+let ipos = try await client.ipos(IPOsQuery())
+```
+
+### Economic Indicators
+
+```swift
+// Treasury yields
+let yields = try await client.treasuryYields(TreasuryYieldsQuery())
+for yield in yields.results ?? [] {
+    print("\(yield.date ?? ""): 10Y=\(yield.yield10Year ?? 0)%")
+}
+
+// Inflation data
+let inflation = try await client.inflation(InflationQuery())
+
+// Labor market
+let labor = try await client.laborMarket(LaborMarketQuery())
+```
+
+### Pagination
+
+All paginated endpoints return lazy `AsyncSequence`. Pages are only fetched as you iterate:
+
+```swift
+for try await page in client.news(NewsQuery(ticker: "AAPL")) {
+    for article in page.results ?? [] {
+        print(article.title)
+    }
+    // Break early if you only need the first page
 }
 ```
 
@@ -157,51 +199,102 @@ See the [Flat Files documentation](Sources/Massive/Massive.docc/FlatFiles.md) fo
 
 The main client for interacting with the Massive API.
 
-**Methods:**
-- `news(_:)` - Fetch news articles
-- `bars(_:)` - Fetch OHLC bar data
-- `allNews(_:)` - Paginated news iterator
-- `allBars(_:)` - Paginated bars iterator
+#### Stocks - Market Data
+
+| Method | Description |
+|--------|-------------|
+| `news(_:)` | Fetch news articles (paginated) |
+| `bars(_:)` | Fetch OHLC bar data (paginated) |
+| `dailyMarketSummary(_:)` | Daily OHLC for entire market |
+| `dailyTickerSummary(_:)` | Daily summary with extended hours |
+| `previousDayBar(_:)` | Previous day's OHLC |
+
+#### Stocks - Tickers
+
+| Method | Description |
+|--------|-------------|
+| `tickers(_:)` | Fetch ticker list (paginated) |
+| `tickerOverview(_:)` | Detailed ticker information |
+| `tickerTypes(_:)` | Available ticker types |
+| `relatedTickers(_:)` | Related tickers |
+
+#### Stocks - Snapshots
+
+| Method | Description |
+|--------|-------------|
+| `fullMarketSnapshot(_:)` | Snapshot of all tickers |
+| `singleTickerSnapshot(_:)` | Snapshot for one ticker |
+| `topMovers(_:)` | Top gainers/losers |
+| `unifiedSnapshot(_:)` | Universal snapshot endpoint |
+
+#### Stocks - Technical Indicators
+
+| Method | Description |
+|--------|-------------|
+| `sma(_:)` | Simple Moving Average |
+| `ema(_:)` | Exponential Moving Average |
+| `macd(_:)` | MACD indicator |
+| `rsi(_:)` | Relative Strength Index |
+
+#### Stocks - Corporate Actions
+
+| Method | Description |
+|--------|-------------|
+| `ipos(_:)` | IPO calendar |
+| `splits(_:)` | Stock splits |
+| `dividends(_:)` | Dividend history |
+| `tickerEvents(_:)` | All corporate events |
+
+#### Stocks - Fundamentals
+
+| Method | Description |
+|--------|-------------|
+| `balanceSheets(_:)` | Balance sheet data |
+| `cashFlowStatements(_:)` | Cash flow statements |
+| `incomeStatements(_:)` | Income statements |
+| `ratios(_:)` | Financial ratios |
+| `shortInterest(_:)` | Short interest data |
+| `shortVolume(_:)` | Daily short volume |
+| `float(_:)` | Float data |
+
+#### Stocks - SEC Filings
+
+| Method | Description |
+|--------|-------------|
+| `tenKSections(_:)` | 10-K filing sections |
+| `riskFactors(_:)` | Categorized risk factors |
+| `riskCategories(_:)` | Risk factor taxonomy |
+
+#### Stocks - Market Info
+
+| Method | Description |
+|--------|-------------|
+| `exchanges(_:)` | Exchange information |
+| `marketHolidays(_:)` | Market holidays |
+| `marketStatus(_:)` | Current market status |
+| `conditionCodes(_:)` | Trade/quote condition codes |
+
+#### Economy
+
+| Method | Description |
+|--------|-------------|
+| `treasuryYields(_:)` | Treasury yield curve |
+| `inflation(_:)` | CPI and PCE data |
+| `inflationExpectations(_:)` | Inflation expectations |
+| `laborMarket(_:)` | Labor market indicators |
 
 ### S3Client
 
 The client for downloading bulk historical data.
 
-**Methods:**
-- `minuteAggregates(for:date:)` - Download and parse minute aggregates
-- `dayAggregates(for:date:)` - Download and parse day aggregates
-- `trades(for:date:)` - Download and parse trades
-- `quotes(for:date:)` - Download and parse quotes
-- `listFlatFiles(assetClass:dataType:year:month:)` - List available files
-- `downloadFlatFile(assetClass:dataType:date:)` - Download raw compressed data
-
-### NewsQuery
-
-Query parameters for the news endpoint.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `ticker` | `String?` | Filter by ticker symbol |
-| `publishedUtc` | `String?` | Filter by publication date |
-| `publishedUtcGte` | `String?` | Published on or after |
-| `publishedUtcLte` | `String?` | Published on or before |
-| `order` | `Order?` | Sort order (`.asc` or `.desc`) |
-| `limit` | `Int?` | Max results (default 10, max 1000) |
-
-### BarsQuery
-
-Query parameters for the bars endpoint.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `ticker` | `String` | Ticker symbol (required) |
-| `multiplier` | `Int` | Timespan multiplier (default 1) |
-| `timespan` | `Timespan` | Time interval (`.minute`, `.hour`, `.day`, etc.) |
-| `from` | `String` | Start date (YYYY-MM-DD or timestamp) |
-| `to` | `String` | End date (YYYY-MM-DD or timestamp) |
-| `adjusted` | `Bool?` | Adjust for splits (default true) |
-| `sort` | `Sort?` | Sort order |
-| `limit` | `Int?` | Max aggregates (default 5000, max 50000) |
+| Method | Description |
+|--------|-------------|
+| `minuteAggregates(for:date:)` | Download and parse minute aggregates |
+| `dayAggregates(for:date:)` | Download and parse day aggregates |
+| `trades(for:date:)` | Download and parse trades |
+| `quotes(for:date:)` | Download and parse quotes |
+| `listFlatFiles(assetClass:dataType:year:month:)` | List available files |
+| `downloadFlatFile(assetClass:dataType:date:)` | Download raw compressed data |
 
 ## Requirements
 

@@ -6,7 +6,7 @@ A Swift client for the Massive API providing access to financial market data.
 
 Massive is a Swift package that provides a type-safe interface to the Massive API. It supports:
 
-- **REST API**: Market news with sentiment analysis and historical OHLC bar data
+- **REST API**: Comprehensive stock market data, economic indicators, and more
 - **Flat Files**: Bulk historical data via S3-compatible storage
 
 The library is designed with Swift 6 concurrency in mind, using `async`/`await` throughout and ensuring all types are `Sendable`.
@@ -29,19 +29,31 @@ import Massive
 let client = MassiveClient(apiKey: "your-api-key")
 
 // Fetch news for a ticker
-let news = try await client.news(NewsQuery(ticker: "AAPL", limit: 10))
-for article in news.results {
-    print(article.title)
+for try await page in client.news(NewsQuery(ticker: "AAPL", limit: 10)) {
+    for article in page.results ?? [] {
+        print(article.title)
+    }
 }
 
 // Fetch daily bars
-let bars = try await client.bars(BarsQuery(
+for try await page in client.bars(BarsQuery(
     ticker: "AAPL",
     from: "2024-01-01",
     to: "2024-01-31"
-))
-for bar in bars.results ?? [] {
-    print("Close: \(bar.c)")
+)) {
+    for bar in page.results ?? [] {
+        print("Close: \(bar.c)")
+    }
+}
+
+// Get current snapshot
+let snapshot = try await client.singleTickerSnapshot(SingleTickerSnapshotQuery(ticker: "AAPL"))
+print("Current price: \(snapshot.ticker?.day?.c ?? 0)")
+
+// Fetch Treasury yields
+let yields = try await client.treasuryYields(TreasuryYieldsQuery())
+for yield in yields.results ?? [] {
+    print("\(yield.date ?? ""): 10Y=\(yield.yield10Year ?? 0)%")
 }
 ```
 
@@ -80,17 +92,113 @@ let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
 - ``MassiveClient``
 - ``MassiveError``
 
-### News
+### Stocks - News
 
 - ``NewsQuery``
 - ``NewsResponse``
-- ``NewsArticle``
 
-### Bars (OHLC Data)
+### Stocks - Bars (OHLC Data)
 
 - ``BarsQuery``
 - ``BarsResponse``
-- ``Bar``
+- ``DailyMarketSummaryQuery``
+- ``DailyMarketSummaryResponse``
+- ``DailyTickerSummaryQuery``
+- ``DailyTickerSummaryResponse``
+- ``PreviousDayBarQuery``
+- ``PreviousDayBarResponse``
+
+### Stocks - Tickers
+
+- ``TickersQuery``
+- ``TickersResponse``
+- ``TickerOverviewQuery``
+- ``TickerOverviewResponse``
+- ``TickerTypesQuery``
+- ``TickerTypesResponse``
+- ``RelatedTickersQuery``
+- ``RelatedTickersResponse``
+
+### Stocks - Snapshots
+
+- ``FullMarketSnapshotQuery``
+- ``FullMarketSnapshotResponse``
+- ``SingleTickerSnapshotQuery``
+- ``SingleTickerSnapshotResponse``
+- ``TopMoversQuery``
+- ``TopMoversResponse``
+- ``UnifiedSnapshotQuery``
+- ``UnifiedSnapshotResponse``
+
+### Stocks - Technical Indicators
+
+- ``SMAQuery``
+- ``SMAResponse``
+- ``EMAQuery``
+- ``EMAResponse``
+- ``MACDQuery``
+- ``MACDResponse``
+- ``RSIQuery``
+- ``RSIResponse``
+
+### Stocks - Corporate Actions
+
+- ``IPOsQuery``
+- ``IPOsResponse``
+- ``SplitsQuery``
+- ``SplitsResponse``
+- ``DividendsQuery``
+- ``DividendsResponse``
+- ``TickerEventsQuery``
+- ``TickerEventsResponse``
+
+### Stocks - Fundamentals
+
+- ``BalanceSheetsQuery``
+- ``BalanceSheetsResponse``
+- ``CashFlowStatementsQuery``
+- ``CashFlowStatementsResponse``
+- ``IncomeStatementsQuery``
+- ``IncomeStatementsResponse``
+- ``RatiosQuery``
+- ``RatiosResponse``
+- ``ShortInterestQuery``
+- ``ShortInterestResponse``
+- ``ShortVolumeQuery``
+- ``ShortVolumeResponse``
+- ``FloatQuery``
+- ``FloatResponse``
+
+### Stocks - SEC Filings
+
+- ``TenKSectionsQuery``
+- ``TenKSectionsResponse``
+- ``RiskFactorsQuery``
+- ``RiskFactorsResponse``
+- ``RiskCategoriesQuery``
+- ``RiskCategoriesResponse``
+
+### Stocks - Market Info
+
+- ``ExchangesQuery``
+- ``ExchangesResponse``
+- ``MarketHolidaysQuery``
+- ``MarketHolidaysResponse``
+- ``MarketStatusQuery``
+- ``MarketStatusResponse``
+- ``ConditionCodesQuery``
+- ``ConditionCodesResponse``
+
+### Economy
+
+- ``TreasuryYieldsQuery``
+- ``TreasuryYieldsResponse``
+- ``InflationQuery``
+- ``InflationResponse``
+- ``InflationExpectationsQuery``
+- ``InflationExpectationsResponse``
+- ``LaborMarketQuery``
+- ``LaborMarketResponse``
 
 ### S3 Flat Files
 
@@ -121,6 +229,13 @@ let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
 
 - ``APIQuery``
 - ``PaginatedResponse``
+
+### Common Types
+
+- ``Ticker``
+- ``SortOrder``
+- ``Sentiment``
+- ``QueryBuilder``
 
 ### Pagination
 

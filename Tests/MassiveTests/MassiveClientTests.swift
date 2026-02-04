@@ -46,12 +46,16 @@ struct MassiveClientTests {
         mock.register(data: mockNewsResponse)
 
         let client = makeTestClient(session: mock)
-        let response = try await client.news(NewsQuery(ticker: "AAPL"))
+        var response: NewsResponse?
+        for try await page in client.news(NewsQuery(ticker: "AAPL")) {
+            response = page
+            break
+        }
 
-        #expect(response.count == 2)
-        #expect(response.results?.count == 2)
-        #expect(response.results?[0].title == "Apple announces new iPhone")
-        #expect(response.results?[1].publisher.name == "Finance Daily")
+        #expect(response?.count == 2)
+        #expect(response?.results?.count == 2)
+        #expect(response?.results?[0].title == "Apple announces new iPhone")
+        #expect(response?.results?[1].publisher.name == "Finance Daily")
     }
 
     @Test("News query builds correct URL parameters")
@@ -93,18 +97,22 @@ struct MassiveClientTests {
         mock.register(data: mockBarsResponse)
 
         let client = makeTestClient(session: mock)
-        let response = try await client.bars(BarsQuery(
+        var response: BarsResponse?
+        for try await page in client.bars(BarsQuery(
             ticker: "AAPL",
             from: "2024-01-01",
             to: "2024-01-10"
-        ))
+        )) {
+            response = page
+            break
+        }
 
-        #expect(response.ticker == "AAPL")
-        #expect(response.adjusted == true)
-        #expect(response.resultsCount == 2)
-        #expect(response.results?.count == 2)
-        #expect(response.results?[0].o == 150.0)
-        #expect(response.results?[0].c == 154.0)
+        #expect(response?.ticker.symbol == "AAPL")
+        #expect(response?.adjusted == true)
+        #expect(response?.resultsCount == 2)
+        #expect(response?.results?.count == 2)
+        #expect(response?.results?[0].o == 150.0)
+        #expect(response?.results?[0].c == 154.0)
     }
 
     @Test("Bars query builds correct path")
@@ -147,7 +155,9 @@ struct MassiveClientTests {
         let client = makeTestClient(session: mock)
 
         do {
-            _ = try await client.news()
+            for try await _ in client.news() {
+                break
+            }
             #expect(Bool(false), "Should have thrown an error")
         } catch let error as MassiveError {
             if case .httpError(let statusCode, _) = error {

@@ -39,19 +39,19 @@ let client = MassiveClient(
 Use ``NewsQuery`` to search for market news:
 
 ```swift
-let news = try await client.news(NewsQuery(
+for try await page in client.news(NewsQuery(
     ticker: "AAPL",
     publishedUtcGte: "2024-01-01",
     order: .desc,
     limit: 10
-))
+)) {
+    for article in page.results ?? [] {
+        print(article.title)
 
-for article in news.results {
-    print(article.title)
-    
-    // Access sentiment analysis if available
-    if let insight = article.insights?.first {
-        print("Sentiment: \(insight.sentiment ?? "unknown")")
+        // Access sentiment analysis if available
+        if let insight = article.insights?.first {
+            print("Sentiment: \(insight.sentiment)")
+        }
     }
 }
 ```
@@ -61,17 +61,17 @@ for article in news.results {
 Use ``BarsQuery`` to retrieve OHLC (Open, High, Low, Close) data:
 
 ```swift
-let bars = try await client.bars(BarsQuery(
+for try await page in client.bars(BarsQuery(
     ticker: "AAPL",
     multiplier: 1,
     timespan: .day,
     from: "2024-01-01",
     to: "2024-01-31"
-))
-
-for bar in bars.results ?? [] {
-    let date = Date(timeIntervalSince1970: Double(bar.t) / 1000)
-    print("\(date): O=\(bar.o) H=\(bar.h) L=\(bar.l) C=\(bar.c) V=\(bar.v)")
+)) {
+    for bar in page.results ?? [] {
+        let date = Date(timeIntervalSince1970: Double(bar.t) / 1000)
+        print("\(date): O=\(bar.o) H=\(bar.h) L=\(bar.l) C=\(bar.c) V=\(bar.v)")
+    }
 }
 ```
 
@@ -91,17 +91,18 @@ Use `multiplier` for custom intervals (e.g., `multiplier: 5` with `.minute` for 
 
 ## Pagination
 
-For endpoints that return many results, use the paginated methods:
+All REST endpoints return lazy `AsyncSequence` that automatically paginates:
 
 ```swift
-for try await page in client.allNews(NewsQuery(ticker: "AAPL")) {
-    for article in page.results {
+for try await page in client.news(NewsQuery(ticker: "AAPL")) {
+    for article in page.results ?? [] {
         print(article.title)
     }
+    // Break early if you only need the first page
 }
 ```
 
-This automatically follows pagination links until all results are fetched.
+Pages are only fetched as you iterate, so breaking early avoids unnecessary requests.
 
 ## Error Handling
 
@@ -109,7 +110,9 @@ The client throws ``MassiveError`` for API errors:
 
 ```swift
 do {
-    let news = try await client.news(NewsQuery(ticker: "INVALID"))
+    for try await _ in client.news(NewsQuery(ticker: "INVALID")) {
+        break
+    }
 } catch let error as MassiveError {
     switch error {
     case .httpError(let statusCode, let data):
