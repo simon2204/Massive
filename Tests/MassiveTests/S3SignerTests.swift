@@ -165,4 +165,50 @@ struct S3SignerTests {
         #expect(dateHeader.contains("T"))
         #expect(dateHeader.hasSuffix("Z"))
     }
+
+    @Test("Sign request x-amz-date matches AWS format exactly")
+    func signRequestDateFormatExact() {
+        let signer = S3Signer(
+            credentials: S3Credentials(accessKeyId: "AKIATEST", secretAccessKey: "secret"),
+            region: "us-east-1"
+        )
+
+        var request = URLRequest(url: URL(string: "https://example.com/bucket/key")!)
+        request.httpMethod = "GET"
+
+        let signedRequest = signer.sign(request)
+        let dateHeader = signedRequest.value(forHTTPHeaderField: "x-amz-date") ?? ""
+
+        // AWS requires exactly: YYYYMMDDTHHMMSSZ (e.g., "20260204T140253Z")
+        // This regex catches Linux VerbatimFormatStyle bugs that produce "2026-02-04 14:02:53 +0000"
+        let awsDatePattern = #/^\d{8}T\d{6}Z$/#
+        #expect(dateHeader.wholeMatch(of: awsDatePattern) != nil,
+                "x-amz-date '\(dateHeader)' does not match AWS format YYYYMMDDTHHMMSSZ")
+    }
+
+    @Test("Sign request credential scope date format")
+    func signRequestCredentialScopeDateFormat() {
+        let signer = S3Signer(
+            credentials: S3Credentials(accessKeyId: "AKIATEST", secretAccessKey: "secret"),
+            region: "us-east-1"
+        )
+
+        var request = URLRequest(url: URL(string: "https://example.com/bucket/key")!)
+        request.httpMethod = "GET"
+
+        let signedRequest = signer.sign(request)
+        let auth = signedRequest.value(forHTTPHeaderField: "Authorization") ?? ""
+
+        // Extract date from credential scope: Credential=AKIATEST/YYYYMMDD/region/s3/aws4_request
+        let credentialPattern = #/Credential=AKIATEST\/(\d{8})\//#
+        let match = auth.firstMatch(of: credentialPattern)
+        #expect(match != nil, "Could not find credential scope date in Authorization header")
+
+        if let match = match {
+            let dateStamp = String(match.1)
+            #expect(dateStamp.count == 8, "Credential scope date should be 8 digits (YYYYMMDD)")
+            // Ensure it doesn't contain dashes (Linux bug would produce "2026-02-04")
+            #expect(!dateStamp.contains("-"), "Credential scope date should not contain dashes")
+        }
+    }
 }

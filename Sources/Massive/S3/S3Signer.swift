@@ -43,8 +43,8 @@ struct S3Signer: Sendable {
         }
 
         // Format dates (AWS requires specific formats in UTC)
-        let amzDate = date.formatted(Self.amzDateFormat)
-        let dateStamp = date.formatted(Self.dateStampFormat)
+        let amzDate = Self.formatAmzDate(date)
+        let dateStamp = Self.formatDateStamp(date)
 
         // Calculate payload hash (empty for GET requests)
         let payload = request.httpBody ?? Data()
@@ -160,19 +160,24 @@ struct S3Signer: Sendable {
 
     // MARK: - Date Formats
 
-    /// Format for x-amz-date header (e.g., "20130524T000000Z").
-    private static let amzDateFormat = Date.VerbatimFormatStyle(
-        format: "\(year: .defaultDigits)\(month: .twoDigits)\(day: .twoDigits)T\(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased))\(minute: .twoDigits)\(second: .twoDigits)Z",
-        timeZone: .gmt,
-        calendar: Calendar(identifier: .iso8601)
-    )
+    /// Format date as "20130524T000000Z" for x-amz-date header.
+    private static func formatAmzDate(_ date: Date) -> String {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+        return String(format: "%04d%02d%02dT%02d%02d%02dZ",
+                      components.year!, components.month!, components.day!,
+                      components.hour!, components.minute!, components.second!)
+    }
 
-    /// Format for credential scope date stamp (e.g., "20130524").
-    private static let dateStampFormat = Date.VerbatimFormatStyle(
-        format: "\(year: .defaultDigits)\(month: .twoDigits)\(day: .twoDigits)",
-        timeZone: .gmt,
-        calendar: Calendar(identifier: .iso8601)
-    )
+    /// Format date as "20130524" for credential scope.
+    private static func formatDateStamp(_ date: Date) -> String {
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d%02d%02d",
+                      components.year!, components.month!, components.day!)
+    }
 }
 
 // MARK: - Data Extension
