@@ -56,31 +56,43 @@ public struct IndicatorUnderlying: Codable, Sendable {
 /// An aggregate bar within indicator underlying data.
 public struct IndicatorAggregate: Codable, Sendable {
     /// The close price.
-    public let c: Double?
+    public let close: Double?
 
     /// The highest price.
-    public let h: Double?
+    public let high: Double?
 
     /// The lowest price.
-    public let l: Double?
+    public let low: Double?
 
     /// The number of transactions.
-    public let n: Int?
+    public let transactions: Int?
 
     /// The open price.
-    public let o: Double?
+    public let open: Double?
 
     /// Whether this is for an OTC ticker.
     public let otc: Bool?
 
     /// The Unix millisecond timestamp.
-    public let t: Int?
+    public let timestamp: Int?
 
     /// The trading volume.
-    public let v: Double?
+    public let volume: Double?
 
     /// The volume weighted average price.
-    public let vw: Double?
+    public let vwap: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case close = "c"
+        case high = "h"
+        case low = "l"
+        case transactions = "n"
+        case open = "o"
+        case otc
+        case timestamp = "t"
+        case volume = "v"
+        case vwap = "vw"
+    }
 }
 
 /// Results container for simple indicators (SMA, EMA, RSI).

@@ -24,32 +24,45 @@ public struct DailyMarketSummaryResponse: Codable, Sendable {
 /// A single OHLC bar for a ticker in the market summary.
 public struct MarketBar: Codable, Sendable {
     /// The exchange symbol that this item is traded under.
-    public let T: String
+    public let ticker: String
 
     /// The close price for the symbol in the given time period.
-    public let c: Double
+    public let close: Double
 
     /// The highest price for the symbol in the given time period.
-    public let h: Double
+    public let high: Double
 
     /// The lowest price for the symbol in the given time period.
-    public let l: Double
+    public let low: Double
 
     /// The number of transactions in the aggregate window.
-    public let n: Int?
+    public let transactions: Int?
 
     /// The open price for the symbol in the given time period.
-    public let o: Double
+    public let open: Double
 
     /// Whether or not this aggregate is for an OTC ticker.
     public let otc: Bool?
 
     /// The Unix millisecond timestamp for the end of the aggregate window.
-    public let t: Int
+    public let timestamp: Int
 
     /// The trading volume of the symbol in the given time period.
-    public let v: Double
+    public let volume: Double
 
     /// The volume weighted average price.
-    public let vw: Double?
+    public let vwap: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case ticker = "T"
+        case close = "c"
+        case high = "h"
+        case low = "l"
+        case transactions = "n"
+        case open = "o"
+        case otc
+        case timestamp = "t"
+        case volume = "v"
+        case vwap = "vw"
+    }
 }

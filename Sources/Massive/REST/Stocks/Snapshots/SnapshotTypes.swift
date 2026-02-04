@@ -36,70 +36,99 @@ public struct TickerSnapshot: Codable, Sendable {
 /// A bar within a snapshot response.
 public struct SnapshotBar: Codable, Sendable {
     /// The close price.
-    public let c: Double?
+    public let close: Double?
 
     /// The highest price.
-    public let h: Double?
+    public let high: Double?
 
     /// The lowest price.
-    public let l: Double?
+    public let low: Double?
 
     /// The open price.
-    public let o: Double?
+    public let open: Double?
 
     /// The trading volume.
-    public let v: Double?
+    public let volume: Double?
 
     /// The volume weighted average price.
-    public let vw: Double?
+    public let vwap: Double?
 
     /// The number of transactions.
-    public let n: Int?
+    public let transactions: Int?
 
     /// The Unix millisecond timestamp.
-    public let t: Int?
+    public let timestamp: Int?
 
     /// Whether this is for an OTC ticker.
     public let otc: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case close = "c"
+        case high = "h"
+        case low = "l"
+        case open = "o"
+        case volume = "v"
+        case vwap = "vw"
+        case transactions = "n"
+        case timestamp = "t"
+        case otc
+    }
 }
 
 /// A quote within a snapshot response.
 public struct SnapshotQuote: Codable, Sendable {
     /// The bid price.
-    public let p: Double?
+    public let bidPrice: Double?
 
     /// The bid size.
-    public let s: Int?
+    public let bidSize: Int?
 
     /// The ask price.
-    public let P: Double?
+    public let askPrice: Double?
 
     /// The ask size.
-    public let S: Int?
+    public let askSize: Int?
 
     /// The Unix millisecond timestamp.
-    public let t: Int?
+    public let timestamp: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case bidPrice = "p"
+        case bidSize = "s"
+        case askPrice = "P"
+        case askSize = "S"
+        case timestamp = "t"
+    }
 }
 
 /// A trade within a snapshot response.
 public struct SnapshotTrade: Codable, Sendable {
     /// The price of the trade.
-    public let p: Double?
+    public let price: Double?
 
     /// The size of the trade.
-    public let s: Int?
+    public let size: Int?
 
     /// The exchange the trade occurred on.
-    public let x: Int?
+    public let exchange: Int?
 
     /// The conditions of the trade.
-    public let c: [Int]?
+    public let conditions: [Int]?
 
     /// The trade ID.
-    public let i: String?
+    public let tradeId: String?
 
     /// The Unix millisecond timestamp.
-    public let t: Int?
+    public let timestamp: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case price = "p"
+        case size = "s"
+        case exchange = "x"
+        case conditions = "c"
+        case tradeId = "i"
+        case timestamp = "t"
+    }
 }
 
 /// Direction for top market movers.
