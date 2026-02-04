@@ -4,8 +4,8 @@ A Swift client for the Massive API providing access to financial market data.
 
 ## Features
 
-- News articles with sentiment analysis
-- Historical OHLC bar data with customizable time intervals
+- **REST API**: Market news with sentiment analysis and historical OHLC bar data
+- **S3 Flat Files**: Bulk historical data via S3-compatible storage
 - Automatic pagination support
 - Rate limiting and retry logic
 - Swift 6 concurrency support
@@ -110,7 +110,7 @@ You can configure a rate limiter to control request frequency:
 ```swift
 let client = MassiveClient(
     apiKey: "your-api-key",
-    rateLimiter: RateLimiter(requestsPerSecond: 5)
+    rateLimiter: RateLimiter(requests: 5, per: .seconds(1))
 )
 ```
 
@@ -125,6 +125,32 @@ let client = MassiveClient(
 )
 ```
 
+## S3 Flat Files
+
+For bulk historical data, use the S3 client:
+
+```swift
+let s3 = S3Client.massiveFlatFiles(credentials: S3Credentials(
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key"
+))
+
+// Download and parse minute aggregates
+let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
+
+for bar in bars.filter({ $0.ticker == "AAPL" }) {
+    print("\(bar.windowStart): O=\(bar.open) C=\(bar.close) V=\(bar.volume)")
+}
+
+// Download and parse trades
+let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
+
+// Download and parse quotes
+let quotes = try await s3.quotes(for: .usStocks, date: "2025-01-15")
+```
+
+See the [Flat Files documentation](Sources/Massive/Massive.docc/FlatFiles.md) for more details.
+
 ## API Reference
 
 ### MassiveClient
@@ -136,6 +162,18 @@ The main client for interacting with the Massive API.
 - `bars(_:)` - Fetch OHLC bar data
 - `allNews(_:)` - Paginated news iterator
 - `allBars(_:)` - Paginated bars iterator
+
+### S3Client
+
+The client for downloading bulk historical data.
+
+**Methods:**
+- `minuteAggregates(for:date:)` - Download and parse minute aggregates
+- `dayAggregates(for:date:)` - Download and parse day aggregates
+- `trades(for:date:)` - Download and parse trades
+- `quotes(for:date:)` - Download and parse quotes
+- `listFlatFiles(assetClass:dataType:year:month:)` - List available files
+- `downloadFlatFile(assetClass:dataType:date:)` - Download raw compressed data
 
 ### NewsQuery
 
@@ -167,8 +205,8 @@ Query parameters for the bars endpoint.
 
 ## Requirements
 
-- Swift 6.0+
-- macOS 10.15+ / iOS 13+ / tvOS 13+ / watchOS 6+
+- Swift 6.2+
+- macOS 26+ / iOS 26+ / tvOS 26+ / watchOS 26+ / visionOS 26+
 
 ## License
 

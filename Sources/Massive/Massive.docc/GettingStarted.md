@@ -29,7 +29,7 @@ For advanced use cases, you can customize the client:
 ```swift
 let client = MassiveClient(
     apiKey: "your-api-key",
-    rateLimiter: RateLimiter(tokensPerSecond: 5),
+    rateLimiter: RateLimiter(requests: 5, per: .seconds(1)),
     retry: Retry(baseDelay: .seconds(1), maxAttempts: 5)
 )
 ```

@@ -17,7 +17,7 @@ Add Massive to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/your-org/Massive.git", from: "1.0.0")
+    .package(url: "https://git.w-hs.de/Simon.Schoepke/massive.git", branch: "main")
 ]
 ```
 

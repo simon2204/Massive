@@ -116,7 +116,7 @@ let vwap = totalValue / Double(totalVolume)
 
 ### Using Timestamps
 
-The ``MinuteAggregate/windowStart`` property is a ``Timestamp`` with nanosecond precision:
+The ``MinuteAggregate/windowStart`` property is a `Timestamp` with nanosecond precision:
 
 ```swift
 for bar in aaplBars {
