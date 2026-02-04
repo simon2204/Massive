@@ -5,6 +5,7 @@ A Swift client for the Massive API providing access to financial market data.
 ## Features
 
 - **REST API**: Comprehensive stock market data, economic indicators, technical analysis, and more
+- **WebSocket Streaming**: Real-time trades, quotes, and aggregates
 - **S3 Flat Files**: Bulk historical data via S3-compatible storage
 - Automatic pagination support
 - Rate limiting and retry logic
@@ -131,6 +132,36 @@ let inflation = try await client.inflation(InflationQuery())
 // Labor market
 let labor = try await client.laborMarket(LaborMarketQuery())
 ```
+
+### WebSocket Streaming
+
+Stream real-time market data with the WebSocket client:
+
+```swift
+let ws = MassiveWebSocket(apiKey: "your-api-key")
+
+// Subscribe to trades and quotes for specific tickers
+try await ws.subscribe(.trades(["AAPL", "GOOGL"]))
+try await ws.subscribe(.quotes(["AAPL"]))
+
+// Stream messages
+for try await message in ws.stream() {
+    switch message {
+    case .trade(let trade):
+        print("\(trade.symbol): \(trade.price) x \(trade.size)")
+    case .quote(let quote):
+        print("\(quote.symbol): \(quote.bidPrice) / \(quote.askPrice)")
+    default:
+        break
+    }
+}
+```
+
+Available subscription types:
+- `.trades([String])` - Real-time trades
+- `.quotes([String])` - Real-time quotes (NBBO)
+- `.aggregatesPerSecond([String])` - Per-second aggregates
+- `.aggregatesPerMinute([String])` - Per-minute aggregates
 
 ### Pagination
 
@@ -295,6 +326,26 @@ The client for downloading bulk historical data.
 | `quotes(for:date:)` | Download and parse quotes |
 | `listFlatFiles(assetClass:dataType:year:month:)` | List available files |
 | `downloadFlatFile(assetClass:dataType:date:)` | Download raw compressed data |
+
+### MassiveWebSocket
+
+The client for streaming real-time market data.
+
+| Method | Description |
+|--------|-------------|
+| `stream()` | Returns an `AsyncThrowingStream` of messages |
+| `subscribe(_:)` | Subscribe to a data channel |
+| `unsubscribe(_:)` | Unsubscribe from a channel |
+| `disconnect()` | Close the connection |
+
+#### Subscription Types
+
+| Type | Description |
+|------|-------------|
+| `.trades([String])` | Real-time trade executions |
+| `.quotes([String])` | Real-time NBBO quotes |
+| `.aggregatesPerSecond([String])` | Per-second OHLCV bars |
+| `.aggregatesPerMinute([String])` | Per-minute OHLCV bars |
 
 ## Requirements
 
