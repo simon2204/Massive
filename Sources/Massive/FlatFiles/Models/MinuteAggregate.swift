@@ -17,7 +17,7 @@ import Fetch
 /// | low | number | Lowest price |
 /// | window_start | integer | Unix nanosecond timestamp |
 /// | transactions | integer | Number of trades |
-public struct MinuteAggregate: Sendable, Hashable {
+public struct MinuteAggregate: AggregateData {
     /// The stock ticker symbol.
     public let ticker: String
 

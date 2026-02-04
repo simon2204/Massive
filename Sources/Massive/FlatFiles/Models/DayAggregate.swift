@@ -5,7 +5,7 @@ import Fetch
 ///
 /// Represents aggregated market data for a single trading day.
 /// Data is unadjusted (no split or dividend adjustments).
-public struct DayAggregate: Sendable, Hashable {
+public struct DayAggregate: AggregateData {
     /// The stock ticker symbol.
     public let ticker: String
 

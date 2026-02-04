@@ -7,6 +7,30 @@ import Fetch
 /// Uses zero-copy UTF-8 byte parsing for optimal performance with large files.
 public enum FlatFileParser {
 
+    // MARK: - Generic Helpers
+
+    /// Parses CSV from gzipped data using a row parser closure.
+    private static func parseGzipped<T>(
+        _ data: Data,
+        using parser: ([UInt8]) throws -> [T]
+    ) throws -> [T] {
+        let bytes = try ByteParsing.decompressToBytes(data)
+        return try parser(bytes)
+    }
+
+    /// Parses CSV from a string using a row parser closure.
+    private static func parseCSV<T>(
+        _ csv: String,
+        using parser: ([UInt8]) throws -> [T]
+    ) throws -> [T] {
+        var csv = csv
+        return try csv.withUTF8 { buffer in
+            guard let baseAddress = buffer.baseAddress else { return [] }
+            let bytes = Array(UnsafeBufferPointer(start: baseAddress, count: buffer.count))
+            return try parser(bytes)
+        }
+    }
+
     // MARK: - Minute Aggregates
 
     /// Parses minute aggregate data from gzipped CSV.
@@ -14,8 +38,7 @@ public enum FlatFileParser {
     /// - Parameter data: The gzip-compressed CSV data.
     /// - Returns: An array of minute aggregates.
     public static func parseMinuteAggregates(from data: Data) throws -> [MinuteAggregate] {
-        let bytes = try ByteParsing.decompressToBytes(data)
-        return try parseMinuteAggregatesFromBytes(bytes)
+        try parseGzipped(data, using: parseAggregatesFromBytes)
     }
 
     /// Parses minute aggregate data from uncompressed CSV string.
@@ -23,42 +46,7 @@ public enum FlatFileParser {
     /// - Parameter csv: The CSV content.
     /// - Returns: An array of minute aggregates.
     public static func parseMinuteAggregatesCSV(_ csv: String) throws -> [MinuteAggregate] {
-        var csv = csv
-        return try csv.withUTF8 { buffer in
-            guard let baseAddress = buffer.baseAddress else { return [] }
-            let bytes = Array(UnsafeBufferPointer(start: baseAddress, count: buffer.count))
-            return try parseMinuteAggregatesFromBytes(bytes)
-        }
-    }
-
-    private static func parseMinuteAggregatesFromBytes(_ bytes: [UInt8]) throws -> [MinuteAggregate] {
-        let lines = ByteParsing.splitLines(bytes)
-        guard lines.count > 1 else { return [] }
-
-        let header = ByteParsing.splitFields(lines[0])
-        let indices = try MinuteAggregateIndices(header: header)
-
-        var results: [MinuteAggregate] = []
-        results.reserveCapacity(lines.count - 1)
-
-        for i in 1..<lines.count {
-            let fields = ByteParsing.splitFields(lines[i])
-            guard fields.count > indices.maxIndex else { continue }
-
-            let agg = MinuteAggregate(
-                ticker: ByteParsing.stringFromBytes(fields[indices.ticker]),
-                volume: ByteParsing.intFromBytes(fields[indices.volume]),
-                open: ByteParsing.doubleFromBytes(fields[indices.open]),
-                close: ByteParsing.doubleFromBytes(fields[indices.close]),
-                high: ByteParsing.doubleFromBytes(fields[indices.high]),
-                low: ByteParsing.doubleFromBytes(fields[indices.low]),
-                windowStart: Timestamp(nanosecondsSinceEpoch: ByteParsing.int64FromBytes(fields[indices.windowStart])),
-                transactions: ByteParsing.intFromBytes(fields[indices.transactions])
-            )
-            results.append(agg)
-        }
-
-        return results
+        try parseCSV(csv, using: parseAggregatesFromBytes)
     }
 
     // MARK: - Day Aggregates
@@ -68,8 +56,7 @@ public enum FlatFileParser {
     /// - Parameter data: The gzip-compressed CSV data.
     /// - Returns: An array of day aggregates.
     public static func parseDayAggregates(from data: Data) throws -> [DayAggregate] {
-        let bytes = try ByteParsing.decompressToBytes(data)
-        return try parseDayAggregatesFromBytes(bytes)
+        try parseGzipped(data, using: parseAggregatesFromBytes)
     }
 
     /// Parses day aggregate data from uncompressed CSV string.
@@ -77,29 +64,26 @@ public enum FlatFileParser {
     /// - Parameter csv: The CSV content.
     /// - Returns: An array of day aggregates.
     public static func parseDayAggregatesCSV(_ csv: String) throws -> [DayAggregate] {
-        var csv = csv
-        return try csv.withUTF8 { buffer in
-            guard let baseAddress = buffer.baseAddress else { return [] }
-            let bytes = Array(UnsafeBufferPointer(start: baseAddress, count: buffer.count))
-            return try parseDayAggregatesFromBytes(bytes)
-        }
+        try parseCSV(csv, using: parseAggregatesFromBytes)
     }
 
-    private static func parseDayAggregatesFromBytes(_ bytes: [UInt8]) throws -> [DayAggregate] {
+    // MARK: - Aggregate Parsing (Shared)
+
+    private static func parseAggregatesFromBytes<T: AggregateData>(_ bytes: [UInt8]) throws -> [T] {
         let lines = ByteParsing.splitLines(bytes)
         guard lines.count > 1 else { return [] }
 
         let header = ByteParsing.splitFields(lines[0])
-        let indices = try DayAggregateIndices(header: header)
+        let indices = try AggregateIndices(header: header)
 
-        var results: [DayAggregate] = []
+        var results: [T] = []
         results.reserveCapacity(lines.count - 1)
 
         for i in 1..<lines.count {
             let fields = ByteParsing.splitFields(lines[i])
             guard fields.count > indices.maxIndex else { continue }
 
-            let agg = DayAggregate(
+            let agg = T(
                 ticker: ByteParsing.stringFromBytes(fields[indices.ticker]),
                 volume: ByteParsing.intFromBytes(fields[indices.volume]),
                 open: ByteParsing.doubleFromBytes(fields[indices.open]),
@@ -122,8 +106,7 @@ public enum FlatFileParser {
     /// - Parameter data: The gzip-compressed CSV data.
     /// - Returns: An array of trades.
     public static func parseTrades(from data: Data) throws -> [Trade] {
-        let bytes = try ByteParsing.decompressToBytes(data)
-        return try parseTradesFromBytes(bytes)
+        try parseGzipped(data, using: parseTradesFromBytes)
     }
 
     /// Parses trade data from uncompressed CSV string.
@@ -131,12 +114,7 @@ public enum FlatFileParser {
     /// - Parameter csv: The CSV content.
     /// - Returns: An array of trades.
     public static func parseTradesCSV(_ csv: String) throws -> [Trade] {
-        var csv = csv
-        return try csv.withUTF8 { buffer in
-            guard let baseAddress = buffer.baseAddress else { return [] }
-            let bytes = Array(UnsafeBufferPointer(start: baseAddress, count: buffer.count))
-            return try parseTradesFromBytes(bytes)
-        }
+        try parseCSV(csv, using: parseTradesFromBytes)
     }
 
     private static func parseTradesFromBytes(_ bytes: [UInt8]) throws -> [Trade] {
@@ -181,8 +159,7 @@ public enum FlatFileParser {
     /// - Parameter data: The gzip-compressed CSV data.
     /// - Returns: An array of quotes.
     public static func parseQuotes(from data: Data) throws -> [Quote] {
-        let bytes = try ByteParsing.decompressToBytes(data)
-        return try parseQuotesFromBytes(bytes)
+        try parseGzipped(data, using: parseQuotesFromBytes)
     }
 
     /// Parses quote data from uncompressed CSV string.
@@ -190,12 +167,7 @@ public enum FlatFileParser {
     /// - Parameter csv: The CSV content.
     /// - Returns: An array of quotes.
     public static func parseQuotesCSV(_ csv: String) throws -> [Quote] {
-        var csv = csv
-        return try csv.withUTF8 { buffer in
-            guard let baseAddress = buffer.baseAddress else { return [] }
-            let bytes = Array(UnsafeBufferPointer(start: baseAddress, count: buffer.count))
-            return try parseQuotesFromBytes(bytes)
-        }
+        try parseCSV(csv, using: parseQuotesFromBytes)
     }
 
     private static func parseQuotesFromBytes(_ bytes: [UInt8]) throws -> [Quote] {
@@ -248,3 +220,4 @@ public enum FlatFileParser {
         return string
     }
 }
+

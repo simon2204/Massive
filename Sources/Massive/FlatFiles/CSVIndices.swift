@@ -1,7 +1,27 @@
 import Foundation
 
-/// Column indices for minute aggregate CSV parsing.
-struct MinuteAggregateIndices {
+// MARK: - Column Lookup Helper
+
+/// Finds a column index by name in a CSV header.
+///
+/// - Parameters:
+///   - name: The column name to find.
+///   - header: The header row as byte slices.
+/// - Returns: The index of the column.
+/// - Throws: `FlatFileError.missingColumn` if the column is not found.
+@inlinable
+func findColumn(_ name: String, in header: [ArraySlice<UInt8>]) throws -> Int {
+    let nameBytes = Array(name.utf8)
+    guard let index = header.firstIndex(where: { $0.elementsEqual(nameBytes) }) else {
+        throw FlatFileError.missingColumn(name)
+    }
+    return index
+}
+
+// MARK: - Aggregate Indices
+
+/// Column indices for aggregate CSV parsing (both minute and day aggregates).
+struct AggregateIndices {
     let ticker: Int
     let volume: Int
     let open: Int
@@ -13,58 +33,25 @@ struct MinuteAggregateIndices {
     let maxIndex: Int
 
     init(header: [ArraySlice<UInt8>]) throws {
-        func find(_ name: String) throws -> Int {
-            let nameBytes = Array(name.utf8)
-            guard let index = header.firstIndex(where: { $0.elementsEqual(nameBytes) }) else {
-                throw FlatFileError.missingColumn(name)
-            }
-            return index
-        }
-
-        ticker = try find("ticker")
-        volume = try find("volume")
-        open = try find("open")
-        close = try find("close")
-        high = try find("high")
-        low = try find("low")
-        windowStart = try find("window_start")
-        transactions = try find("transactions")
+        ticker = try findColumn("ticker", in: header)
+        volume = try findColumn("volume", in: header)
+        open = try findColumn("open", in: header)
+        close = try findColumn("close", in: header)
+        high = try findColumn("high", in: header)
+        low = try findColumn("low", in: header)
+        windowStart = try findColumn("window_start", in: header)
+        transactions = try findColumn("transactions", in: header)
         maxIndex = max(ticker, volume, open, close, high, low, windowStart, transactions)
     }
 }
 
-/// Column indices for day aggregate CSV parsing.
-struct DayAggregateIndices {
-    let ticker: Int
-    let volume: Int
-    let open: Int
-    let close: Int
-    let high: Int
-    let low: Int
-    let windowStart: Int
-    let transactions: Int
-    let maxIndex: Int
+/// Typealias for backwards compatibility.
+typealias MinuteAggregateIndices = AggregateIndices
 
-    init(header: [ArraySlice<UInt8>]) throws {
-        func find(_ name: String) throws -> Int {
-            let nameBytes = Array(name.utf8)
-            guard let index = header.firstIndex(where: { $0.elementsEqual(nameBytes) }) else {
-                throw FlatFileError.missingColumn(name)
-            }
-            return index
-        }
+/// Typealias for backwards compatibility.
+typealias DayAggregateIndices = AggregateIndices
 
-        ticker = try find("ticker")
-        volume = try find("volume")
-        open = try find("open")
-        close = try find("close")
-        high = try find("high")
-        low = try find("low")
-        windowStart = try find("window_start")
-        transactions = try find("transactions")
-        maxIndex = max(ticker, volume, open, close, high, low, windowStart, transactions)
-    }
-}
+// MARK: - Trade Indices
 
 /// Column indices for trade CSV parsing.
 struct TradeIndices {
@@ -84,31 +71,25 @@ struct TradeIndices {
     let maxIndex: Int
 
     init(header: [ArraySlice<UInt8>]) throws {
-        func find(_ name: String) throws -> Int {
-            let nameBytes = Array(name.utf8)
-            guard let index = header.firstIndex(where: { $0.elementsEqual(nameBytes) }) else {
-                throw FlatFileError.missingColumn(name)
-            }
-            return index
-        }
-
-        ticker = try find("ticker")
-        conditions = try find("conditions")
-        correction = try find("correction")
-        exchange = try find("exchange")
-        id = try find("id")
-        participantTimestamp = try find("participant_timestamp")
-        price = try find("price")
-        sequenceNumber = try find("sequence_number")
-        sipTimestamp = try find("sip_timestamp")
-        size = try find("size")
-        tape = try find("tape")
-        trfId = try find("trf_id")
-        trfTimestamp = try find("trf_timestamp")
+        ticker = try findColumn("ticker", in: header)
+        conditions = try findColumn("conditions", in: header)
+        correction = try findColumn("correction", in: header)
+        exchange = try findColumn("exchange", in: header)
+        id = try findColumn("id", in: header)
+        participantTimestamp = try findColumn("participant_timestamp", in: header)
+        price = try findColumn("price", in: header)
+        sequenceNumber = try findColumn("sequence_number", in: header)
+        sipTimestamp = try findColumn("sip_timestamp", in: header)
+        size = try findColumn("size", in: header)
+        tape = try findColumn("tape", in: header)
+        trfId = try findColumn("trf_id", in: header)
+        trfTimestamp = try findColumn("trf_timestamp", in: header)
         maxIndex = max(ticker, conditions, correction, exchange, id, participantTimestamp,
                        price, sequenceNumber, sipTimestamp, size, tape, trfId, trfTimestamp)
     }
 }
+
+// MARK: - Quote Indices
 
 /// Column indices for quote CSV parsing.
 struct QuoteIndices {
@@ -129,28 +110,20 @@ struct QuoteIndices {
     let maxIndex: Int
 
     init(header: [ArraySlice<UInt8>]) throws {
-        func find(_ name: String) throws -> Int {
-            let nameBytes = Array(name.utf8)
-            guard let index = header.firstIndex(where: { $0.elementsEqual(nameBytes) }) else {
-                throw FlatFileError.missingColumn(name)
-            }
-            return index
-        }
-
-        ticker = try find("ticker")
-        askExchange = try find("ask_exchange")
-        askPrice = try find("ask_price")
-        askSize = try find("ask_size")
-        bidExchange = try find("bid_exchange")
-        bidPrice = try find("bid_price")
-        bidSize = try find("bid_size")
-        conditions = try find("conditions")
-        indicators = try find("indicators")
-        participantTimestamp = try find("participant_timestamp")
-        sequenceNumber = try find("sequence_number")
-        sipTimestamp = try find("sip_timestamp")
-        tape = try find("tape")
-        trfTimestamp = try find("trf_timestamp")
+        ticker = try findColumn("ticker", in: header)
+        askExchange = try findColumn("ask_exchange", in: header)
+        askPrice = try findColumn("ask_price", in: header)
+        askSize = try findColumn("ask_size", in: header)
+        bidExchange = try findColumn("bid_exchange", in: header)
+        bidPrice = try findColumn("bid_price", in: header)
+        bidSize = try findColumn("bid_size", in: header)
+        conditions = try findColumn("conditions", in: header)
+        indicators = try findColumn("indicators", in: header)
+        participantTimestamp = try findColumn("participant_timestamp", in: header)
+        sequenceNumber = try findColumn("sequence_number", in: header)
+        sipTimestamp = try findColumn("sip_timestamp", in: header)
+        tape = try findColumn("tape", in: header)
+        trfTimestamp = try findColumn("trf_timestamp", in: header)
         maxIndex = max(ticker, askExchange, askPrice, askSize, bidExchange, bidPrice, bidSize,
                        conditions, indicators, participantTimestamp, sequenceNumber, sipTimestamp, tape, trfTimestamp)
     }
