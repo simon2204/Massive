@@ -21,32 +21,17 @@ import Foundation
 ///     seriesType: .close
 /// )
 /// ```
-public struct EMAQuery: APIQuery {
-    /// The ticker symbol (e.g., "AAPL" for Apple Inc.).
+public struct EMAQuery: BaseIndicatorQuery {
+    public static let indicatorName = "ema"
+
     public let ticker: Ticker
-
-    /// Query by timestamp.
     public var timestamp: Timestamp?
-
-    /// The size of the aggregate time window.
     public var timespan: IndicatorTimespan?
-
-    /// Whether or not the results are adjusted for splits. Default is true.
     public var adjusted: Bool?
-
-    /// The window size used to calculate the EMA.
     public var window: Int?
-
-    /// The price component to use for calculation.
     public var seriesType: SeriesType?
-
-    /// Include the aggregates used to calculate the indicator.
     public var expandUnderlying: Bool?
-
-    /// Order results by timestamp.
     public var order: SortOrder?
-
-    /// Limit the number of results (default 10, max 5000).
     public var limit: Int?
 
     public init(
@@ -69,22 +54,5 @@ public struct EMAQuery: APIQuery {
         self.expandUnderlying = expandUnderlying
         self.order = order
         self.limit = limit
-    }
-
-    public var path: String {
-        "/v1/indicators/ema/\(ticker.symbol)"
-    }
-
-    public var queryItems: [URLQueryItem]? {
-        var builder = QueryBuilder()
-        builder.add("timestamp", timestamp)
-        builder.add("timespan", timespan)
-        builder.add("adjusted", adjusted)
-        builder.add("window", window)
-        builder.add("series_type", seriesType)
-        builder.add("expand_underlying", expandUnderlying)
-        builder.add("order", order)
-        builder.add("limit", limit)
-        return builder.build()
     }
 }
