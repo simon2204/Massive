@@ -17,7 +17,7 @@ Add Massive to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://git.w-hs.de/Simon.Schoepke/massive.git", branch: "main")
+    .package(url: "https://github.com/simon2204/Massive.git", branch: "main")
 ]
 ```
 
@@ -95,9 +95,9 @@ let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
 
 ## Documentation
 
-For complete API documentation, build the DocC documentation in Xcode:
+**[View Documentation](https://simon2204.github.io/Massive/documentation/massive/)**
 
-**Product → Build Documentation** (⌃⇧⌘D)
+Or build locally in Xcode: **Product → Build Documentation** (⌃⇧⌘D)
 
 The documentation includes:
 - Getting Started guide
