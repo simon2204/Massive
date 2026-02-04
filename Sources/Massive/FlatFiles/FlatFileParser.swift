@@ -1,5 +1,5 @@
 import Foundation
-import Compression
+import SWCompression
 import Fetch
 
 /// Parses CSV flat files from Massive.
@@ -215,79 +215,15 @@ public enum FlatFileParser {
             return string
         }
 
-        let decompressed = try decompressGzip(data)
-        guard let string = String(data: decompressed, encoding: .utf8) else {
+        do {
+            let decompressed = try GzipArchive.unarchive(archive: data)
+            guard let string = String(data: decompressed, encoding: .utf8) else {
+                throw FlatFileError.invalidData
+            }
+            return string
+        } catch {
             throw FlatFileError.invalidData
         }
-        return string
-    }
-
-    private static func decompressGzip(_ data: Data) throws -> Data {
-        // Skip gzip header (minimum 10 bytes)
-        guard data.count > 10 else {
-            throw FlatFileError.invalidData
-        }
-
-        // Find start of compressed data (skip header)
-        var offset = 10
-        let flags = data[3]
-
-        // FEXTRA
-        if flags & 0x04 != 0 {
-            guard data.count > offset + 2 else { throw FlatFileError.invalidData }
-            let extraLen = Int(data[offset]) | (Int(data[offset + 1]) << 8)
-            offset += 2 + extraLen
-        }
-
-        // FNAME
-        if flags & 0x08 != 0 {
-            while offset < data.count && data[offset] != 0 {
-                offset += 1
-            }
-            offset += 1
-        }
-
-        // FCOMMENT
-        if flags & 0x10 != 0 {
-            while offset < data.count && data[offset] != 0 {
-                offset += 1
-            }
-            offset += 1
-        }
-
-        // FHCRC
-        if flags & 0x02 != 0 {
-            offset += 2
-        }
-
-        guard offset < data.count - 8 else {
-            throw FlatFileError.invalidData
-        }
-
-        // Decompress using Compression framework
-        let compressedData = data.subdata(in: offset..<(data.count - 8))
-
-        let bufferSize = 1024 * 1024 // 1MB chunks
-        var decompressed = Data()
-
-        try compressedData.withUnsafeBytes { sourcePtr in
-            let filter = try OutputFilter(.decompress, using: .zlib) { data in
-                if let data {
-                    decompressed.append(data)
-                }
-            }
-
-            var offset = 0
-            while offset < sourcePtr.count {
-                let chunkSize = min(bufferSize, sourcePtr.count - offset)
-                let chunk = Data(bytes: sourcePtr.baseAddress!.advanced(by: offset), count: chunkSize)
-                try filter.write(chunk)
-                offset += chunkSize
-            }
-            try filter.finalize()
-        }
-
-        return decompressed
     }
 
     // MARK: - Helpers

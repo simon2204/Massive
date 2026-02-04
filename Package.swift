@@ -22,6 +22,7 @@ let package = Package(
         .package(url: "https://git.w-hs.de/Simon.Schoepke/fetch.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin.git", from: "1.0.0"),
+        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.8.0"),
     ],
     targets: [
         .target(
@@ -29,6 +30,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Fetch", package: "fetch"),
                 .product(name: "Crypto", package: "swift-crypto"),
+                .product(name: "SWCompression", package: "SWCompression"),
             ]
         ),
         .testTarget(

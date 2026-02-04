@@ -47,31 +47,25 @@ for bar in bars.results ?? [] {
 
 ### Flat Files Quick Start
 
-For bulk historical data, use the S3 client:
+For bulk historical data, use the S3 client with the typed API:
 
 ```swift
 import Massive
 
-let credentials = S3Credentials(
+let s3 = S3Client.massiveFlatFiles(credentials: S3Credentials(
     accessKeyId: "your-access-key",
     secretAccessKey: "your-secret-key"
-)
-let s3 = S3Client.massiveFlatFiles(credentials: credentials)
+))
 
-// List available files
-let result = try await s3.listFlatFiles(
-    assetClass: "us_stocks_sip",
-    dataType: "minute_aggs_v1",
-    year: 2025,
-    month: 1
-)
+// Download and parse minute aggregates
+let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
 
-// Download a file
-let data = try await s3.downloadFlatFile(
-    assetClass: "us_stocks_sip",
-    dataType: "minute_aggs_v1",
-    date: "2025-01-02"
-)
+for bar in bars.filter({ $0.ticker == "AAPL" }) {
+    print("\(bar.windowStart): O=\(bar.open) C=\(bar.close) V=\(bar.volume)")
+}
+
+// Download and parse trades
+let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
 ```
 
 ## Topics
@@ -106,6 +100,22 @@ let data = try await s3.downloadFlatFile(
 - ``S3Object``
 - ``S3ObjectMetadata``
 - ``S3Error``
+
+### Flat File Types
+
+- ``AssetClass``
+- ``DataType``
+
+### Flat File Data Models
+
+- ``MinuteAggregate``
+- ``DayAggregate``
+- ``Trade``
+- ``Quote``
+
+### Parsing
+
+- ``FlatFileParser``
 
 ### Protocols
 

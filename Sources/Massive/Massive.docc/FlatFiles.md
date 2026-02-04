@@ -28,6 +28,36 @@ let credentials = S3Credentials(
 let s3 = S3Client.massiveFlatFiles(credentials: credentials)
 ```
 
+## Quick Start
+
+Here's a complete example that downloads daily stock data and finds the top gainers:
+
+```swift
+import Massive
+
+// 1. Create the S3 client with your credentials
+let s3 = S3Client.massiveFlatFiles(credentials: S3Credentials(
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key"
+))
+
+// 2. Download and parse day aggregates
+let bars = try await s3.dayAggregates(for: .usStocks, date: "2025-01-15")
+
+// 3. Calculate daily returns and find top gainers
+let gainers = bars
+    .map { bar in
+        let returnPct = (bar.close - bar.open) / bar.open * 100
+        return (bar.ticker, returnPct, bar.volume)
+    }
+    .sorted { $0.1 > $1.1 }
+    .prefix(10)
+
+for (ticker, returnPct, volume) in gainers {
+    print("\(ticker): +\(String(format: "%.2f", returnPct))% (\(volume) shares)")
+}
+```
+
 ## Downloading and Parsing Data
 
 The simplest way to get market data is with the typed API, which downloads, decompresses, and parses in one step:
@@ -66,6 +96,67 @@ let quotes = try await s3.quotes(for: .usStocks, date: "2025-01-15")
 for quote in quotes {
     print("\(quote.ticker): \(quote.bidPrice) / \(quote.askPrice)")
 }
+```
+
+## Working with Data Models
+
+### Filtering by Ticker
+
+```swift
+let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
+
+// Get all Apple bars
+let aaplBars = bars.filter { $0.ticker == "AAPL" }
+
+// Calculate VWAP (Volume Weighted Average Price)
+let totalValue = aaplBars.reduce(0.0) { $0 + $1.close * Double($1.volume) }
+let totalVolume = aaplBars.reduce(0) { $0 + $1.volume }
+let vwap = totalValue / Double(totalVolume)
+```
+
+### Using Timestamps
+
+The ``MinuteAggregate/windowStart`` property is a ``Timestamp`` with nanosecond precision:
+
+```swift
+for bar in aaplBars {
+    // Get the timestamp as a formatted string
+    print("\(bar.windowStart): \(bar.close)")
+    
+    // Access raw nanoseconds since epoch
+    let nanos = bar.windowStart.nanosecondsSinceEpoch
+    
+    // Arithmetic with Duration
+    let fiveMinutesLater = bar.windowStart + .seconds(300)
+}
+```
+
+### Analyzing Trades
+
+```swift
+let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
+
+// Filter for large block trades (10,000+ shares)
+let blockTrades = trades.filter { $0.size >= 10_000 }
+
+// Group by ticker
+let tradesByTicker = Dictionary(grouping: blockTrades) { $0.ticker }
+
+for (ticker, tickerTrades) in tradesByTicker.prefix(5) {
+    let totalVolume = tickerTrades.reduce(0) { $0 + $1.size }
+    print("\(ticker): \(tickerTrades.count) block trades, \(totalVolume) shares")
+}
+```
+
+### Working with Quotes
+
+```swift
+let quotes = try await s3.quotes(for: .usStocks, date: "2025-01-15")
+
+// Calculate bid-ask spreads
+let aaplQuotes = quotes.filter { $0.ticker == "AAPL" }
+let avgSpread = aaplQuotes.reduce(0.0) { $0 + ($1.askPrice - $1.bidPrice) } / Double(aaplQuotes.count)
+print("AAPL average spread: $\(String(format: "%.4f", avgSpread))")
 ```
 
 ## Listing Files
