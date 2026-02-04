@@ -27,11 +27,11 @@ extension S3Client {
     /// )
     /// let s3 = S3Client.massiveFlatFiles(credentials: credentials)
     ///
-    /// // List available data
-    /// let result = try await s3.list(prefix: "us_stocks_sip/")
+    /// // Download and parse minute aggregates
+    /// let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
     ///
-    /// // Download a file
-    /// let data = try await s3.download(key: "us_stocks_sip/trades_v1/2025/11/2025-11-05.csv.gz")
+    /// // Download and parse trades
+    /// let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
     /// ```
     ///
     /// - Parameters:
@@ -50,28 +50,111 @@ extension S3Client {
         )
     }
 
-    /// Lists flat files for a specific asset class and data type.
-    ///
-    /// ## Available Asset Classes
-    ///
-    /// - `us_stocks_sip` - US Stocks (SIP)
-    /// - `us_options_opra` - US Options (OPRA)
-    /// - `indices` - Indices
-    /// - `forex` - Forex
-    /// - `crypto` - Crypto
-    ///
-    /// ## Available Data Types
-    ///
-    /// - `trades_v1` - Trades
-    /// - `quotes_v1` - Quotes
-    /// - `minute_aggs_v1` - Minute Aggregates
-    /// - `day_aggs_v1` - Day Aggregates
+    // MARK: - Typed API
+
+    /// Downloads and parses minute aggregates for a specific date.
     ///
     /// - Parameters:
-    ///   - assetClass: The asset class (e.g., `us_stocks_sip`).
-    ///   - dataType: The data type (e.g., `trades_v1`).
-    ///   - year: Optional year filter (e.g., `2025`).
-    ///   - month: Optional month filter (e.g., `11`). Requires `year`.
+    ///   - assetClass: The asset class (e.g., `.usStocks`).
+    ///   - date: The date in `YYYY-MM-DD` format.
+    /// - Returns: An array of minute aggregates.
+    public func minuteAggregates(
+        for assetClass: AssetClass,
+        date: String
+    ) async throws -> [MinuteAggregate] {
+        let data = try await downloadFlatFile(
+            assetClass: assetClass.rawValue,
+            dataType: DataType.minuteAggregates.rawValue,
+            date: date
+        )
+        return try FlatFileParser.parseMinuteAggregates(from: data)
+    }
+
+    /// Downloads and parses day aggregates for a specific date.
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class (e.g., `.usStocks`).
+    ///   - date: The date in `YYYY-MM-DD` format.
+    /// - Returns: An array of day aggregates.
+    public func dayAggregates(
+        for assetClass: AssetClass,
+        date: String
+    ) async throws -> [DayAggregate] {
+        let data = try await downloadFlatFile(
+            assetClass: assetClass.rawValue,
+            dataType: DataType.dayAggregates.rawValue,
+            date: date
+        )
+        return try FlatFileParser.parseDayAggregates(from: data)
+    }
+
+    /// Downloads and parses trades for a specific date.
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class (e.g., `.usStocks`).
+    ///   - date: The date in `YYYY-MM-DD` format.
+    /// - Returns: An array of trades.
+    public func trades(
+        for assetClass: AssetClass,
+        date: String
+    ) async throws -> [Trade] {
+        let data = try await downloadFlatFile(
+            assetClass: assetClass.rawValue,
+            dataType: DataType.trades.rawValue,
+            date: date
+        )
+        return try FlatFileParser.parseTrades(from: data)
+    }
+
+    /// Downloads and parses quotes for a specific date.
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class (e.g., `.usStocks`).
+    ///   - date: The date in `YYYY-MM-DD` format.
+    /// - Returns: An array of quotes.
+    public func quotes(
+        for assetClass: AssetClass,
+        date: String
+    ) async throws -> [Quote] {
+        let data = try await downloadFlatFile(
+            assetClass: assetClass.rawValue,
+            dataType: DataType.quotes.rawValue,
+            date: date
+        )
+        return try FlatFileParser.parseQuotes(from: data)
+    }
+
+    // MARK: - List Files
+
+    /// Lists flat files for a specific asset class and data type.
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class.
+    ///   - dataType: The data type.
+    ///   - year: Optional year filter.
+    ///   - month: Optional month filter. Requires `year`.
+    /// - Returns: A list result containing matching files.
+    public func listFlatFiles(
+        assetClass: AssetClass,
+        dataType: DataType,
+        year: Int? = nil,
+        month: Int? = nil
+    ) async throws -> S3ListResult {
+        try await listFlatFiles(
+            assetClass: assetClass.rawValue,
+            dataType: dataType.rawValue,
+            year: year,
+            month: month
+        )
+    }
+
+    /// Lists flat files for a specific asset class and data type (string-based).
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class string (e.g., `us_stocks_sip`).
+    ///   - dataType: The data type string (e.g., `trades_v1`).
+    ///   - year: Optional year filter.
+    ///   - month: Optional month filter. Requires `year`.
     /// - Returns: A list result containing matching files.
     public func listFlatFiles(
         assetClass: String,
@@ -91,12 +174,33 @@ extension S3Client {
         return try await list(prefix: prefix)
     }
 
+    // MARK: - Download Raw
+
     /// Downloads a flat file for a specific date.
     ///
     /// - Parameters:
-    ///   - assetClass: The asset class (e.g., `us_stocks_sip`).
-    ///   - dataType: The data type (e.g., `trades_v1`).
-    ///   - date: The date string in `YYYY-MM-DD` format.
+    ///   - assetClass: The asset class.
+    ///   - dataType: The data type.
+    ///   - date: The date in `YYYY-MM-DD` format.
+    /// - Returns: The compressed CSV data (gzip).
+    public func downloadFlatFile(
+        assetClass: AssetClass,
+        dataType: DataType,
+        date: String
+    ) async throws -> Data {
+        try await downloadFlatFile(
+            assetClass: assetClass.rawValue,
+            dataType: dataType.rawValue,
+            date: date
+        )
+    }
+
+    /// Downloads a flat file for a specific date (string-based).
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class string.
+    ///   - dataType: The data type string.
+    ///   - date: The date in `YYYY-MM-DD` format.
     /// - Returns: The compressed CSV data (gzip).
     public func downloadFlatFile(
         assetClass: String,
@@ -110,9 +214,30 @@ extension S3Client {
     /// Downloads a flat file to a local file.
     ///
     /// - Parameters:
-    ///   - assetClass: The asset class (e.g., `us_stocks_sip`).
-    ///   - dataType: The data type (e.g., `trades_v1`).
-    ///   - date: The date string in `YYYY-MM-DD` format.
+    ///   - assetClass: The asset class.
+    ///   - dataType: The data type.
+    ///   - date: The date in `YYYY-MM-DD` format.
+    ///   - destination: The local file URL to save to.
+    public func downloadFlatFile(
+        assetClass: AssetClass,
+        dataType: DataType,
+        date: String,
+        to destination: URL
+    ) async throws {
+        try await downloadFlatFile(
+            assetClass: assetClass.rawValue,
+            dataType: dataType.rawValue,
+            date: date,
+            to: destination
+        )
+    }
+
+    /// Downloads a flat file to a local file (string-based).
+    ///
+    /// - Parameters:
+    ///   - assetClass: The asset class string.
+    ///   - dataType: The data type string.
+    ///   - date: The date in `YYYY-MM-DD` format.
     ///   - destination: The local file URL to save to.
     public func downloadFlatFile(
         assetClass: String,

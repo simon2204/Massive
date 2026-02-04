@@ -1,5 +1,5 @@
 {
-  "originHash" : "faba7b5e4e76e0c7a77dea513a7656911bf6541ef289579ec6340aa991e4a58e",
+  "originHash" : "af58398e50cda147a1732a6f077784156c8b458478031322e0731c92562514ee",
   "pins" : [
     {
       "identity" : "fetch",
@@ -7,7 +7,7 @@
       "location" : "https://git.w-hs.de/Simon.Schoepke/fetch.git",
       "state" : {
         "branch" : "main",
-        "revision" : "04bf0d1da1b4006543e890c89cff7cceafbce99d"
+        "revision" : "7d0b026fc23ae7d037917b449ff486b28d815d75"
       }
     },
     {

@@ -7,8 +7,8 @@ Download bulk historical market data via S3-compatible storage.
 Massive Flat Files provide compressed CSV files containing historical market data. This is more efficient than making individual REST API requests when you need large datasets.
 
 Data is organized by:
-- **Asset Class**: `us_stocks_sip`, `us_options_opra`, `indices`, `forex`, `crypto`
-- **Data Type**: `trades_v1`, `quotes_v1`, `minute_aggs_v1`, `day_aggs_v1`
+- **Asset Class**: ``AssetClass/usStocks``, ``AssetClass/usOptions``, ``AssetClass/indices``, ``AssetClass/forex``, ``AssetClass/crypto``
+- **Data Type**: ``DataType/trades``, ``DataType/quotes``, ``DataType/minuteAggregates``, ``DataType/dayAggregates``
 - **Date**: Files are organized by year and month
 
 ## Prerequisites
@@ -28,14 +28,54 @@ let credentials = S3Credentials(
 let s3 = S3Client.massiveFlatFiles(credentials: credentials)
 ```
 
+## Downloading and Parsing Data
+
+The simplest way to get market data is with the typed API, which downloads, decompresses, and parses in one step:
+
+### Minute Aggregates
+
+```swift
+let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
+
+for bar in bars {
+    print("\(bar.ticker): O=\(bar.open) H=\(bar.high) L=\(bar.low) C=\(bar.close) V=\(bar.volume)")
+}
+```
+
+### Day Aggregates
+
+```swift
+let dailyBars = try await s3.dayAggregates(for: .usStocks, date: "2025-01-15")
+```
+
+### Trades
+
+```swift
+let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
+
+for trade in trades {
+    print("\(trade.ticker) @ \(trade.price) x \(trade.size)")
+}
+```
+
+### Quotes
+
+```swift
+let quotes = try await s3.quotes(for: .usStocks, date: "2025-01-15")
+
+for quote in quotes {
+    print("\(quote.ticker): \(quote.bidPrice) / \(quote.askPrice)")
+}
+```
+
 ## Listing Files
 
 ### List by Asset Class and Data Type
 
 ```swift
 let result = try await s3.listFlatFiles(
-    assetClass: "us_stocks_sip",
-    dataType: "minute_aggs_v1",
+    assetClass: .usStocks,
+    dataType: .minuteAggregates,
     year: 2025,
     month: 1
 )
@@ -63,16 +103,16 @@ for try await page in s3.listAll(prefix: "us_stocks_sip/") {
 }
 ```
 
-## Downloading Files
+## Downloading Raw Files
+
+If you need the raw gzip-compressed CSV data:
 
 ### Download to Memory
 
-For smaller files or when you need to process data immediately:
-
 ```swift
 let data = try await s3.downloadFlatFile(
-    assetClass: "us_stocks_sip",
-    dataType: "minute_aggs_v1",
+    assetClass: .usStocks,
+    dataType: .minuteAggregates,
     date: "2025-01-02"
 )
 // data is gzip-compressed CSV
@@ -86,8 +126,8 @@ For larger files, stream directly to disk to avoid memory pressure:
 let destination = URL(filePath: "/path/to/file.csv.gz")
 
 try await s3.downloadFlatFile(
-    assetClass: "us_stocks_sip",
-    dataType: "minute_aggs_v1",
+    assetClass: .usStocks,
+    dataType: .minuteAggregates,
     date: "2025-01-02",
     to: destination
 )
@@ -169,7 +209,23 @@ do {
 
 ## See Also
 
+### Client
 - ``S3Client``
 - ``S3Credentials``
+
+### Types
+- ``AssetClass``
+- ``DataType``
+
+### Data Models
+- ``MinuteAggregate``
+- ``DayAggregate``
+- ``Trade``
+- ``Quote``
+
+### Parsing
+- ``FlatFileParser``
+
+### S3 Types
 - ``S3ListResult``
 - ``S3Object``
