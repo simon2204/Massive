@@ -20,12 +20,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://git.w-hs.de/Simon.Schoepke/fetch.git", branch: "main"),
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0"),
     ],
     targets: [
         .target(
             name: "Massive",
             dependencies: [
-                .product(name: "Fetch", package: "fetch")
+                .product(name: "Fetch", package: "fetch"),
+                .product(name: "Crypto", package: "swift-crypto"),
             ]
         ),
         .executableTarget(
