@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
+
 /// Result of an S3 list objects operation.
 public struct S3ListResult: Sendable {
     /// The objects in the current page.
