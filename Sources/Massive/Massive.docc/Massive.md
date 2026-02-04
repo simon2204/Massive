@@ -17,68 +17,19 @@ Add Massive to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://git.w-hs.de/Simon.Schoepke/massive.git", branch: "main")
+    .package(url: "https://github.com/simon2204/Massive.git", branch: "main")
 ]
 ```
 
 ### REST API Quick Start
 
-```swift
-import Massive
-
-let client = MassiveClient(apiKey: "your-api-key")
-
-// Fetch news for a ticker
-for try await page in client.news(NewsQuery(ticker: "AAPL", limit: 10)) {
-    for article in page.results ?? [] {
-        print(article.title)
-    }
-}
-
-// Fetch daily bars
-for try await page in client.bars(BarsQuery(
-    ticker: "AAPL",
-    from: "2024-01-01",
-    to: "2024-01-31"
-)) {
-    for bar in page.results ?? [] {
-        print("Close: \(bar.c)")
-    }
-}
-
-// Get current snapshot
-let snapshot = try await client.singleTickerSnapshot(SingleTickerSnapshotQuery(ticker: "AAPL"))
-print("Current price: \(snapshot.ticker?.day?.c ?? 0)")
-
-// Fetch Treasury yields
-let yields = try await client.treasuryYields(TreasuryYieldsQuery())
-for yield in yields.results ?? [] {
-    print("\(yield.date ?? ""): 10Y=\(yield.yield10Year ?? 0)%")
-}
-```
+@Snippet(path: "Massive/Snippets/RESTQuickstart")
 
 ### Flat Files Quick Start
 
 For bulk historical data, use the S3 client with the typed API:
 
-```swift
-import Massive
-
-let s3 = S3Client.massiveFlatFiles(credentials: S3Credentials(
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key"
-))
-
-// Download and parse minute aggregates
-let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
-
-for bar in bars.filter({ $0.ticker == "AAPL" }) {
-    print("\(bar.windowStart): O=\(bar.open) C=\(bar.close) V=\(bar.volume)")
-}
-
-// Download and parse trades
-let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
-```
+@Snippet(path: "Massive/Snippets/S3Quickstart")
 
 ## Topics
 

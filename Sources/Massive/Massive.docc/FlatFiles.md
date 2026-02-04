@@ -17,16 +17,7 @@ You need S3 credentials (separate from your API key). Get them from the [Massive
 
 ## Creating an S3 Client
 
-```swift
-import Massive
-
-let credentials = S3Credentials(
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key"
-)
-
-let s3 = S3Client.massiveFlatFiles(credentials: credentials)
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "create-s3-client")
 
 ## Quick Start
 
@@ -40,135 +31,55 @@ The simplest way to get market data is with the typed API, which downloads, deco
 
 ### Minute Aggregates
 
-```swift
-let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
-
-for bar in bars {
-    print("\(bar.ticker): O=\(bar.open) H=\(bar.high) L=\(bar.low) C=\(bar.close) V=\(bar.volume)")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "minute-aggregates")
 
 ### Day Aggregates
 
-```swift
-let dailyBars = try await s3.dayAggregates(for: .usStocks, date: "2025-01-15")
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "day-aggregates")
 
 ### Trades
 
-```swift
-let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
-
-for trade in trades {
-    print("\(trade.ticker) @ \(trade.price) x \(trade.size)")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "trades")
 
 ### Quotes
 
-```swift
-let quotes = try await s3.quotes(for: .usStocks, date: "2025-01-15")
-
-for quote in quotes {
-    print("\(quote.ticker): \(quote.bidPrice) / \(quote.askPrice)")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "quotes")
 
 ## Working with Data Models
 
 ### Filtering by Ticker
 
-```swift
-let bars = try await s3.minuteAggregates(for: .usStocks, date: "2025-01-15")
-
-// Get all Apple bars
-let aaplBars = bars.filter { $0.ticker == "AAPL" }
-
-// Calculate VWAP (Volume Weighted Average Price)
-let totalValue = aaplBars.reduce(0.0) { $0 + $1.close * Double($1.volume) }
-let totalVolume = aaplBars.reduce(0) { $0 + $1.volume }
-let vwap = totalValue / Double(totalVolume)
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "filter-by-ticker")
 
 ### Using Timestamps
 
 The ``MinuteAggregate/windowStart`` property is a `Timestamp` with nanosecond precision:
 
-```swift
-for bar in aaplBars {
-    // Get the timestamp as a formatted string
-    print("\(bar.windowStart): \(bar.close)")
-    
-    // Access raw nanoseconds since epoch
-    let nanos = bar.windowStart.nanosecondsSinceEpoch
-    
-    // Arithmetic with Duration
-    let fiveMinutesLater = bar.windowStart + .seconds(300)
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "timestamps")
 
 ### Analyzing Trades
 
-```swift
-let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
-
-// Filter for large block trades (10,000+ shares)
-let blockTrades = trades.filter { $0.size >= 10_000 }
-
-// Group by ticker
-let tradesByTicker = Dictionary(grouping: blockTrades) { $0.ticker }
-
-for (ticker, tickerTrades) in tradesByTicker.prefix(5) {
-    let totalVolume = tickerTrades.reduce(0) { $0 + $1.size }
-    print("\(ticker): \(tickerTrades.count) block trades, \(totalVolume) shares")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "block-trades")
 
 ### Working with Quotes
 
-```swift
-let quotes = try await s3.quotes(for: .usStocks, date: "2025-01-15")
-
-// Calculate bid-ask spreads
-let aaplQuotes = quotes.filter { $0.ticker == "AAPL" }
-let avgSpread = aaplQuotes.reduce(0.0) { $0 + ($1.askPrice - $1.bidPrice) } / Double(aaplQuotes.count)
-print("AAPL average spread: $\(String(format: "%.4f", avgSpread))")
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "spreads")
 
 ## Listing Files
 
 ### List by Asset Class and Data Type
 
-```swift
-let result = try await s3.listFlatFiles(
-    assetClass: .usStocks,
-    dataType: .minuteAggregates,
-    year: 2025,
-    month: 1
-)
-
-for file in result.objects {
-    print("\(file.key) - \(file.size) bytes")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "list-files")
 
 ### List with Custom Prefix
 
-```swift
-let result = try await s3.list(prefix: "us_stocks_sip/trades_v1/2025/")
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "list-prefix")
 
 ### Handle Pagination
 
 For directories with many files:
 
-```swift
-for try await page in s3.listAll(prefix: "us_stocks_sip/") {
-    for file in page.objects {
-        print(file.key)
-    }
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "list-paginated")
 
 ## Downloading Raw Files
 
@@ -176,52 +87,25 @@ If you need the raw gzip-compressed CSV data:
 
 ### Download to Memory
 
-```swift
-let data = try await s3.downloadFlatFile(
-    assetClass: .usStocks,
-    dataType: .minuteAggregates,
-    date: "2025-01-02"
-)
-// data is gzip-compressed CSV
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "download-memory")
 
 ### Download to Disk
 
 For larger files, stream directly to disk to avoid memory pressure:
 
-```swift
-let destination = URL(filePath: "/path/to/file.csv.gz")
-
-try await s3.downloadFlatFile(
-    assetClass: .usStocks,
-    dataType: .minuteAggregates,
-    date: "2025-01-02",
-    to: destination
-)
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "download-disk")
 
 ### Download by Key
 
 If you know the exact file path:
 
-```swift
-let data = try await s3.download(
-    key: "us_stocks_sip/minute_aggs_v1/2025/01/2025-01-02.csv.gz"
-)
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "download-key")
 
 ## Checking File Existence
 
 Use ``S3Client/head(key:)`` to check if a file exists without downloading:
 
-```swift
-if let metadata = try await s3.head(key: "us_stocks_sip/minute_aggs_v1/2025/01/2025-01-02.csv.gz") {
-    print("Size: \(metadata.size) bytes")
-    print("ETag: \(metadata.etag ?? "unknown")")
-} else {
-    print("File not found")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "head")
 
 ## Available Data
 
@@ -257,22 +141,7 @@ Data for each trading day is typically available by 11:00 AM ET the following da
 
 ## Error Handling
 
-```swift
-do {
-    let data = try await s3.download(key: "nonexistent.csv.gz")
-} catch let error as S3Error {
-    switch error {
-    case .notFound(let key):
-        print("File not found: \(key)")
-    case .httpError(let statusCode, let message):
-        print("HTTP \(statusCode): \(message ?? "unknown")")
-    case .invalidResponse:
-        print("Invalid response")
-    case .xmlParseError(let details):
-        print("XML parse error: \(details)")
-    }
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFilesExamples", slice: "error-handling")
 
 ## See Also
 

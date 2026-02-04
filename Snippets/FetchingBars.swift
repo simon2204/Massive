@@ -8,16 +8,17 @@ func example() async throws {
     // Create a client with your API key
     let client = MassiveClient(apiKey: apiKey)
 
-    // Fetch daily bars for Apple stock
-    let response = try await client.bars(BarsQuery(
+    // Paginate through daily bars for Apple stock
+    let query = BarsQuery(
         ticker: "AAPL",
         from: "2024-01-01",
         to: "2024-01-31"
-    ))
-
-    // Access the bar data
-    for bar in response.results ?? [] {
-        print("Date: \(bar.timestamp), Open: \(bar.open), Close: \(bar.close)")
+    )
+    
+    for try await page in client.bars(query) {
+        for bar in page.results ?? [] {
+            print("Date: \(bar.timestamp), Open: \(bar.open), Close: \(bar.close)")
+        }
     }
 
     // snippet.hide

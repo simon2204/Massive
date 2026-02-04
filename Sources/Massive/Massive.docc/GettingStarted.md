@@ -14,11 +14,7 @@ You'll need a Massive API key. Get one from the [Massive Dashboard](https://mass
 
 Initialize ``MassiveClient`` with your API key:
 
-```swift
-import Massive
-
-let client = MassiveClient(apiKey: "your-api-key")
-```
+@Snippet(path: "Massive/Snippets/GettingStartedExamples", slice: "create-client")
 
 The client handles authentication, rate limiting, and automatic retries.
 
@@ -26,13 +22,7 @@ The client handles authentication, rate limiting, and automatic retries.
 
 For advanced use cases, you can customize the client:
 
-```swift
-let client = MassiveClient(
-    apiKey: "your-api-key",
-    rateLimiter: RateLimiter(requests: 5, per: .seconds(1)),
-    retry: Retry(baseDelay: .seconds(1), maxAttempts: 5)
-)
-```
+@Snippet(path: "Massive/Snippets/GettingStartedExamples", slice: "client-config")
 
 ## Fetching News
 
@@ -64,14 +54,7 @@ Use `multiplier` for custom intervals (e.g., `multiplier: 5` with `.minute` for 
 
 All REST endpoints return lazy `AsyncSequence` that automatically paginates:
 
-```swift
-for try await page in client.news(NewsQuery(ticker: "AAPL")) {
-    for article in page.results ?? [] {
-        print(article.title)
-    }
-    // Break early if you only need the first page
-}
-```
+@Snippet(path: "Massive/Snippets/GettingStartedExamples", slice: "pagination")
 
 Pages are only fetched as you iterate, so breaking early avoids unnecessary requests.
 
@@ -79,20 +62,7 @@ Pages are only fetched as you iterate, so breaking early avoids unnecessary requ
 
 The client throws ``MassiveError`` for API errors:
 
-```swift
-do {
-    for try await _ in client.news(NewsQuery(ticker: "INVALID")) {
-        break
-    }
-} catch let error as MassiveError {
-    switch error {
-    case .httpError(let statusCode, let data):
-        print("HTTP \(statusCode): \(String(data: data, encoding: .utf8) ?? "")")
-    case .invalidResponse:
-        print("Invalid response from server")
-    }
-}
-```
+@Snippet(path: "Massive/Snippets/GettingStartedExamples", slice: "error-handling")
 
 ## Technical Indicators
 

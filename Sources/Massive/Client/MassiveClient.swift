@@ -28,12 +28,12 @@ import FoundationNetworking
 ///
 /// ## Pagination
 ///
-/// For endpoints that return paginated results, use the `allNews` or `allBars` methods
-/// to automatically iterate through all pages:
+/// Methods like `news()` and `bars()` return async sequences that automatically
+/// paginate through all results:
 ///
 /// ```swift
-/// for try await page in client.allNews(NewsQuery(ticker: "AAPL")) {
-///     for article in page.results {
+/// for try await page in client.news(NewsQuery(ticker: "AAPL")) {
+///     for article in page.results ?? [] {
 ///         print(article.title)
 ///     }
 /// }
