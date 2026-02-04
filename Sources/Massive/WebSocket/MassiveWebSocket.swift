@@ -1,3 +1,4 @@
+import Fetch
 import Foundation
 import WebSocketKit
 import NIOCore
@@ -23,6 +24,16 @@ import NIOPosix
 /// }
 /// ```
 public actor MassiveWebSocket {
+    // MARK: - Endpoints
+    
+    /// Real-time stocks WebSocket endpoint.
+    public static let stocksEndpoint = "wss://socket.massive.com/stocks"
+    
+    /// 15-minute delayed stocks WebSocket endpoint.
+    public static let stocksDelayedEndpoint = "wss://delayed.massive.com/stocks"
+    
+    // MARK: - Properties
+    
     /// The API key for authentication.
     private let apiKey: String
 
@@ -45,7 +56,7 @@ public actor MassiveWebSocket {
     private var isAuthenticated = false
 
     /// JSON decoder for incoming messages.
-    private let decoder = JSONDecoder()
+    private let decoder = JSONDataDecoder(keyDecodingStrategy: .useDefaultKeys)
 
     /// JSON encoder for outgoing messages.
     private let encoder = JSONEncoder()
@@ -54,11 +65,12 @@ public actor MassiveWebSocket {
     ///
     /// - Parameters:
     ///   - apiKey: Your Massive API key.
-    ///   - endpoint: The WebSocket endpoint URL. Defaults to the stocks endpoint.
+    ///   - endpoint: The WebSocket endpoint URL. Defaults to real-time stocks.
+    ///     Use `stocksDelayedEndpoint` for 15-minute delayed data.
     ///   - eventLoopGroup: Optional event loop group. If not provided, a new one is created.
     public init(
         apiKey: String,
-        endpoint: String = "wss://socket.polygon.io/stocks",
+        endpoint: String = MassiveWebSocket.stocksEndpoint,
         eventLoopGroup: EventLoopGroup? = nil
     ) {
         self.apiKey = apiKey
@@ -133,7 +145,9 @@ public actor MassiveWebSocket {
     ) async throws {
         pendingSubscriptions = subscriptions
 
-        try await WebSocket.connect(
+        let promise = eventLoopGroup.any().makePromise(of: Void.self)
+        
+        WebSocket.connect(
             to: endpoint,
             on: eventLoopGroup
         ) { [weak self] ws in
@@ -152,8 +166,11 @@ public actor MassiveWebSocket {
 
             ws.onClose.whenComplete { result in
                 continuation.finish()
+                promise.succeed(())
             }
-        }
+        }.cascadeFailure(to: promise)
+        
+        try await promise.futureResult.get()
     }
 
     private func setWebSocket(_ ws: WebSocket) {

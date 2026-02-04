@@ -163,7 +163,7 @@ struct S3Signer: Sendable {
     /// Format date as "20130524T000000Z" for x-amz-date header.
     private static func formatAmzDate(_ date: Date) -> String {
         var calendar = Calendar(identifier: .iso8601)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = .gmt
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
         return String(format: "%04d%02d%02dT%02d%02d%02dZ",
                       components.year!, components.month!, components.day!,
@@ -173,7 +173,7 @@ struct S3Signer: Sendable {
     /// Format date as "20130524" for credential scope.
     private static func formatDateStamp(_ date: Date) -> String {
         var calendar = Calendar(identifier: .iso8601)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = .gmt
         let components = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d%02d%02d",
                       components.year!, components.month!, components.day!)

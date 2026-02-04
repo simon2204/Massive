@@ -1,3 +1,4 @@
+import Fetch
 import Foundation
 
 /// Real-time NBBO quote data from WebSocket stream.
@@ -32,8 +33,8 @@ public struct StreamQuote: Sendable, Decodable {
     /// The indicators.
     public let indicators: [Int]?
 
-    /// The SIP timestamp in Unix milliseconds.
-    public let timestamp: Int64
+    /// The SIP timestamp.
+    public let timestamp: Timestamp
 
     /// The sequence number.
     public let sequenceNumber: Int64
@@ -55,5 +56,23 @@ public struct StreamQuote: Sendable, Decodable {
         case timestamp = "t"
         case sequenceNumber = "q"
         case tape = "z"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        eventType = try container.decode(String.self, forKey: .eventType)
+        symbol = try container.decode(String.self, forKey: .symbol)
+        bidExchange = try container.decode(Int.self, forKey: .bidExchange)
+        bidPrice = try container.decode(Double.self, forKey: .bidPrice)
+        bidSize = try container.decode(Int.self, forKey: .bidSize)
+        askExchange = try container.decode(Int.self, forKey: .askExchange)
+        askPrice = try container.decode(Double.self, forKey: .askPrice)
+        askSize = try container.decode(Int.self, forKey: .askSize)
+        condition = try container.decodeIfPresent(Int.self, forKey: .condition)
+        indicators = try container.decodeIfPresent([Int].self, forKey: .indicators)
+        let timestampMs = try container.decode(Int64.self, forKey: .timestamp)
+        timestamp = Timestamp(millisecondsSinceEpoch: timestampMs)
+        sequenceNumber = try container.decode(Int64.self, forKey: .sequenceNumber)
+        tape = try container.decode(Int.self, forKey: .tape)
     }
 }

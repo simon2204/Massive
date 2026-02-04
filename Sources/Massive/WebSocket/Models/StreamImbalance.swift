@@ -1,3 +1,4 @@
+import Fetch
 import Foundation
 
 /// Net Order Imbalance (NOI) data from WebSocket stream.
@@ -8,8 +9,8 @@ public struct StreamImbalance: Sendable, Decodable {
     /// The ticker symbol.
     public let symbol: String
 
-    /// The timestamp in Unix milliseconds.
-    public let timestamp: Int64
+    /// The timestamp.
+    public let timestamp: Timestamp
 
     /// The planned auction time in EST format: (hour × 100) + minutes.
     /// For example, 930 = 9:30 AM.
@@ -44,6 +45,21 @@ public struct StreamImbalance: Sendable, Decodable {
         case imbalanceQuantity = "o"
         case pairedQuantity = "p"
         case bookClearingPrice = "b"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        eventType = try container.decode(String.self, forKey: .eventType)
+        symbol = try container.decode(String.self, forKey: .symbol)
+        let timestampMs = try container.decode(Int64.self, forKey: .timestamp)
+        timestamp = Timestamp(millisecondsSinceEpoch: timestampMs)
+        auctionTime = try container.decode(Int.self, forKey: .auctionTime)
+        auctionType = try container.decode(AuctionType.self, forKey: .auctionType)
+        sequenceNumber = try container.decode(Int.self, forKey: .sequenceNumber)
+        exchange = try container.decode(Int.self, forKey: .exchange)
+        imbalanceQuantity = try container.decode(Int.self, forKey: .imbalanceQuantity)
+        pairedQuantity = try container.decode(Int.self, forKey: .pairedQuantity)
+        bookClearingPrice = try container.decode(Double.self, forKey: .bookClearingPrice)
     }
 }
 

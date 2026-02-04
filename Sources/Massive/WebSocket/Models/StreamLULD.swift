@@ -1,3 +1,4 @@
+import Fetch
 import Foundation
 
 /// Limit Up - Limit Down price band data from WebSocket stream.
@@ -20,8 +21,8 @@ public struct StreamLULD: Sendable, Decodable {
     /// The tape (1 = NYSE, 2 = AMEX, 3 = Nasdaq).
     public let tape: Int
 
-    /// The timestamp in Unix milliseconds.
-    public let timestamp: Int64
+    /// The timestamp.
+    public let timestamp: Timestamp
 
     /// The sequence number.
     public let sequenceNumber: Int64
@@ -35,5 +36,18 @@ public struct StreamLULD: Sendable, Decodable {
         case tape = "z"
         case timestamp = "t"
         case sequenceNumber = "q"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        eventType = try container.decode(String.self, forKey: .eventType)
+        symbol = try container.decode(String.self, forKey: .symbol)
+        highLimit = try container.decode(Double.self, forKey: .highLimit)
+        lowLimit = try container.decode(Double.self, forKey: .lowLimit)
+        indicators = try container.decodeIfPresent([Int].self, forKey: .indicators)
+        tape = try container.decode(Int.self, forKey: .tape)
+        let timestampMs = try container.decode(Int64.self, forKey: .timestamp)
+        timestamp = Timestamp(millisecondsSinceEpoch: timestampMs)
+        sequenceNumber = try container.decode(Int64.self, forKey: .sequenceNumber)
     }
 }

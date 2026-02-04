@@ -1,3 +1,4 @@
+import Fetch
 import Foundation
 
 /// Real-time aggregate bar data from WebSocket stream.
@@ -40,11 +41,11 @@ public struct StreamAggregate: Sendable, Decodable {
     /// The average trade size for this aggregate window.
     public let averageTradeSize: Int
 
-    /// The starting timestamp of this aggregate window (Unix milliseconds).
-    public let startTimestamp: Int64
+    /// The starting timestamp of this aggregate window.
+    public let startTimestamp: Timestamp
 
-    /// The ending timestamp of this aggregate window (Unix milliseconds).
-    public let endTimestamp: Int64
+    /// The ending timestamp of this aggregate window.
+    public let endTimestamp: Timestamp
 
     /// Whether this aggregate is for an OTC ticker. Omitted if false.
     public let isOTC: Bool?
@@ -65,5 +66,26 @@ public struct StreamAggregate: Sendable, Decodable {
         case startTimestamp = "s"
         case endTimestamp = "e"
         case isOTC = "otc"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        eventType = try container.decode(String.self, forKey: .eventType)
+        symbol = try container.decode(String.self, forKey: .symbol)
+        volume = try container.decode(Int.self, forKey: .volume)
+        accumulatedVolume = try container.decode(Int.self, forKey: .accumulatedVolume)
+        officialOpen = try container.decode(Double.self, forKey: .officialOpen)
+        vwap = try container.decode(Double.self, forKey: .vwap)
+        open = try container.decode(Double.self, forKey: .open)
+        close = try container.decode(Double.self, forKey: .close)
+        high = try container.decode(Double.self, forKey: .high)
+        low = try container.decode(Double.self, forKey: .low)
+        dailyVwap = try container.decode(Double.self, forKey: .dailyVwap)
+        averageTradeSize = try container.decode(Int.self, forKey: .averageTradeSize)
+        let startMs = try container.decode(Int64.self, forKey: .startTimestamp)
+        startTimestamp = Timestamp(millisecondsSinceEpoch: startMs)
+        let endMs = try container.decode(Int64.self, forKey: .endTimestamp)
+        endTimestamp = Timestamp(millisecondsSinceEpoch: endMs)
+        isOTC = try container.decodeIfPresent(Bool.self, forKey: .isOTC)
     }
 }
