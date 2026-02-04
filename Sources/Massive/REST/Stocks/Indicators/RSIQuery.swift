@@ -25,14 +25,14 @@ public struct RSIQuery: BaseIndicatorQuery {
     public static let indicatorName = "rsi"
 
     public let ticker: Ticker
-    public var timestamp: Timestamp?
-    public var timespan: IndicatorTimespan?
-    public var adjusted: Bool?
-    public var window: Int?
-    public var seriesType: SeriesType?
-    public var expandUnderlying: Bool?
-    public var order: SortOrder?
-    public var limit: Int?
+    public let timestamp: Timestamp?
+    public let timespan: IndicatorTimespan?
+    public let adjusted: Bool?
+    public let window: Int?
+    public let seriesType: SeriesType?
+    public let expandUnderlying: Bool?
+    public let order: SortOrder?
+    public let limit: Int?
 
     public init(
         ticker: Ticker,

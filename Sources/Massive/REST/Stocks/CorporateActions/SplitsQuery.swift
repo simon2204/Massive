@@ -19,19 +19,19 @@ import Foundation
 /// ```
 public struct SplitsQuery: APIQuery {
     /// The ticker symbol.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Date of split execution (YYYY-MM-DD).
-    public var executionDate: String?
+    public let executionDate: String?
 
     /// Type of split adjustment.
-    public var adjustmentType: SplitAdjustmentType?
+    public let adjustmentType: SplitAdjustmentType?
 
     /// Limit the number of results (default 100, max 5000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction (e.g., "execution_date.desc").
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

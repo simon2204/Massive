@@ -19,22 +19,22 @@ import Foundation
 /// ```
 public struct DividendsQuery: APIQuery {
     /// The ticker symbol.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Ex-dividend date (YYYY-MM-DD).
-    public var exDividendDate: String?
+    public let exDividendDate: String?
 
     /// Distribution frequency.
-    public var frequency: DividendFrequency?
+    public let frequency: DividendFrequency?
 
     /// Type of distribution.
-    public var distributionType: DividendDistributionType?
+    public let distributionType: DividendDistributionType?
 
     /// Limit the number of results (default 100, max 5000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction (e.g., "ex_dividend_date.desc").
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

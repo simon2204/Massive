@@ -45,12 +45,6 @@ struct AggregateIndices {
     }
 }
 
-/// Typealias for backwards compatibility.
-typealias MinuteAggregateIndices = AggregateIndices
-
-/// Typealias for backwards compatibility.
-typealias DayAggregateIndices = AggregateIndices
-
 // MARK: - Trade Indices
 
 /// Column indices for trade CSV parsing.

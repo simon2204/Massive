@@ -58,12 +58,8 @@ public struct Trade: Sendable, Hashable {
     /// The trade size in shares.
     public let size: Int
 
-    /// The tape identifier.
-    ///
-    /// - 1: NYSE listed
-    /// - 2: NYSE ARCA/American listed
-    /// - 3: NASDAQ listed
-    public let tape: Int
+    /// The tape indicating the primary listing exchange.
+    public let tape: Tape
 
     /// The Trade Reporting Facility ID (for off-exchange trades).
     public let trfId: Int?
@@ -83,7 +79,7 @@ public struct Trade: Sendable, Hashable {
         sequenceNumber: Int,
         sipTimestamp: Timestamp,
         size: Int,
-        tape: Int,
+        tape: Tape,
         trfId: Int? = nil,
         trfTimestamp: Timestamp? = nil
     ) {

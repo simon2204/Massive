@@ -24,43 +24,43 @@ import Foundation
 /// ```
 public struct NewsQuery: APIQuery {
     /// The ticker symbol (e.g., "AAPL" for Apple Inc.).
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Return results published on, before, or after this date.
-    public var publishedUtc: String?
+    public let publishedUtc: String?
 
     /// Search by ticker greater than or equal to this value.
-    public var tickerGte: Ticker?
+    public let tickerGte: Ticker?
 
     /// Search by ticker greater than this value.
-    public var tickerGt: Ticker?
+    public let tickerGt: Ticker?
 
     /// Search by ticker less than or equal to this value.
-    public var tickerLte: Ticker?
+    public let tickerLte: Ticker?
 
     /// Search by ticker less than this value.
-    public var tickerLt: Ticker?
+    public let tickerLt: Ticker?
 
     /// Return results published on or after this date.
-    public var publishedUtcGte: String?
+    public let publishedUtcGte: String?
 
     /// Return results published after this date.
-    public var publishedUtcGt: String?
+    public let publishedUtcGt: String?
 
     /// Return results published on or before this date.
-    public var publishedUtcLte: String?
+    public let publishedUtcLte: String?
 
     /// Return results published before this date.
-    public var publishedUtcLt: String?
+    public let publishedUtcLt: String?
 
     /// Order results based on the `sort` field.
-    public var order: SortOrder?
+    public let order: SortOrder?
 
     /// Limit the number of results returned. Default is 10, max is 1000.
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort field used for ordering.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

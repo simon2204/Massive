@@ -23,7 +23,7 @@ public struct TickerOverviewQuery: APIQuery {
     /// Specify a point in time to get information about the ticker available on that date.
     /// When retrieving information from SEC filings, this date is compared with the
     /// period of report date on the SEC filing.
-    public var date: String?
+    public let date: String?
 
     public init(ticker: Ticker, date: String? = nil) {
         self.ticker = ticker

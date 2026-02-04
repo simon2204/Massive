@@ -38,42 +38,13 @@ let client = MassiveClient(
 
 Use ``NewsQuery`` to search for market news:
 
-```swift
-for try await page in client.news(NewsQuery(
-    ticker: "AAPL",
-    publishedUtcGte: "2024-01-01",
-    order: .desc,
-    limit: 10
-)) {
-    for article in page.results ?? [] {
-        print(article.title)
-
-        // Access sentiment analysis if available
-        if let insight = article.insights?.first {
-            print("Sentiment: \(insight.sentiment)")
-        }
-    }
-}
-```
+@Snippet(path: "Massive/Snippets/FetchingNews")
 
 ## Fetching Historical Bars
 
 Use ``BarsQuery`` to retrieve OHLC (Open, High, Low, Close) data:
 
-```swift
-for try await page in client.bars(BarsQuery(
-    ticker: "AAPL",
-    multiplier: 1,
-    timespan: .day,
-    from: "2024-01-01",
-    to: "2024-01-31"
-)) {
-    for bar in page.results ?? [] {
-        let date = Date(timeIntervalSince1970: Double(bar.t) / 1000)
-        print("\(date): O=\(bar.o) H=\(bar.h) L=\(bar.l) C=\(bar.c) V=\(bar.v)")
-    }
-}
-```
+@Snippet(path: "Massive/Snippets/FetchingBars")
 
 ### Time Intervals
 
@@ -123,6 +94,19 @@ do {
 }
 ```
 
+## Technical Indicators
+
+Calculate technical analysis indicators like SMA, RSI, and MACD:
+
+@Snippet(path: "Massive/Snippets/TechnicalIndicators")
+
+## Real-Time Streaming
+
+For real-time market data, use the WebSocket API:
+
+@Snippet(path: "Massive/Snippets/WebSocketStreaming")
+
 ## Next Steps
 
 - <doc:FlatFiles> - Download bulk historical data via S3
+- <doc:AdvancedTopics> - Fundamentals, Corporate Actions, Economy Data

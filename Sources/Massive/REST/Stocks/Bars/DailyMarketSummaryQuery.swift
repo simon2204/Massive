@@ -19,10 +19,10 @@ public struct DailyMarketSummaryQuery: APIQuery {
     public let date: String
 
     /// Whether or not the results are adjusted for splits. Default is true.
-    public var adjusted: Bool?
+    public let adjusted: Bool?
 
     /// Include OTC securities in the response. Default is false.
-    public var includeOtc: Bool?
+    public let includeOtc: Bool?
 
     public init(date: String, adjusted: Bool? = nil, includeOtc: Bool? = nil) {
         self.date = date

@@ -154,7 +154,7 @@ struct FlatFileParserTests {
         #expect(trade.sequenceNumber == 1)
         #expect(trade.sipTimestamp.nanosecondsSinceEpoch == 1704067200000000001)
         #expect(trade.size == 100)
-        #expect(trade.tape == 1)
+        #expect(trade.tape == .nyse)
         #expect(trade.trfId == nil)
         #expect(trade.trfTimestamp == nil)
     }
@@ -212,7 +212,7 @@ struct FlatFileParserTests {
         #expect(quote.participantTimestamp.nanosecondsSinceEpoch == 1704067200000000000)
         #expect(quote.sequenceNumber == 1)
         #expect(quote.sipTimestamp.nanosecondsSinceEpoch == 1704067200000000001)
-        #expect(quote.tape == 1)
+        #expect(quote.tape == .nyse)
         #expect(quote.trfTimestamp == nil)
     }
 

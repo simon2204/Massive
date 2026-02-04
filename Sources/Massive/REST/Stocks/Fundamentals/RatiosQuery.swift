@@ -13,16 +13,16 @@ import Foundation
 /// ```
 public struct RatiosQuery: APIQuery {
     /// The ticker symbol.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Company's SEC Central Index Key.
-    public var cik: String?
+    public let cik: String?
 
     /// Limit results (default 100, max 50000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

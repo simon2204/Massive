@@ -13,13 +13,13 @@ import Foundation
 /// ```
 public struct FloatQuery: APIQuery {
     /// The ticker symbol.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Limit results (default 100, max 5000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

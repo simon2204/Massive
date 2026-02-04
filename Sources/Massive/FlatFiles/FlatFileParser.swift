@@ -142,7 +142,7 @@ public enum FlatFileParser {
                 sequenceNumber: ByteParsing.intFromBytes(fields[indices.sequenceNumber]),
                 sipTimestamp: Timestamp(nanosecondsSinceEpoch: ByteParsing.int64FromBytes(fields[indices.sipTimestamp])),
                 size: ByteParsing.intFromBytes(fields[indices.size]),
-                tape: ByteParsing.intFromBytes(fields[indices.tape]),
+                tape: Tape(rawValue: ByteParsing.intFromBytes(fields[indices.tape])) ?? .nyse,
                 trfId: ByteParsing.optionalIntFromBytes(fields[indices.trfId]),
                 trfTimestamp: ByteParsing.optionalInt64FromBytes(fields[indices.trfTimestamp]).map { Timestamp(nanosecondsSinceEpoch: $0) }
             )
@@ -197,7 +197,7 @@ public enum FlatFileParser {
                 participantTimestamp: Timestamp(nanosecondsSinceEpoch: ByteParsing.int64FromBytes(fields[indices.participantTimestamp])),
                 sequenceNumber: ByteParsing.intFromBytes(fields[indices.sequenceNumber]),
                 sipTimestamp: Timestamp(nanosecondsSinceEpoch: ByteParsing.int64FromBytes(fields[indices.sipTimestamp])),
-                tape: ByteParsing.intFromBytes(fields[indices.tape]),
+                tape: Tape(rawValue: ByteParsing.intFromBytes(fields[indices.tape])) ?? .nyse,
                 trfTimestamp: ByteParsing.optionalInt64FromBytes(fields[indices.trfTimestamp]).map { Timestamp(nanosecondsSinceEpoch: $0) }
             )
             results.append(quote)

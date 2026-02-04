@@ -16,10 +16,10 @@ import Foundation
 /// ```
 public struct ExchangesQuery: APIQuery {
     /// Filter by asset class.
-    public var assetClass: MarketAssetClass?
+    public let assetClass: MarketAssetClass?
 
     /// Filter by locale.
-    public var locale: MarketLocale?
+    public let locale: MarketLocale?
 
     public init(assetClass: MarketAssetClass? = nil, locale: MarketLocale? = nil) {
         self.assetClass = assetClass

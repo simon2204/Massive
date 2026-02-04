@@ -16,16 +16,16 @@ import Foundation
 /// ```
 public struct ShortVolumeQuery: APIQuery {
     /// The ticker symbol.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Trade date (YYYY-MM-DD).
-    public var date: String?
+    public let date: String?
 
     /// Limit results (default 10, max 50000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

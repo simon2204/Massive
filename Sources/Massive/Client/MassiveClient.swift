@@ -57,7 +57,7 @@ public struct MassiveClient: Sendable {
     ///   - retry: Retry configuration for failed requests. Defaults to 3 attempts with 1 second base delay.
     public init(
         apiKey: String,
-        baseURL: URL = URL(string: "https://api.massive.com")!,
+        baseURL: URL = massiveAPIEndpoint,
         session: URLSession = .shared,
         rateLimiter: RateLimiter? = nil,
         retry: Retry = Retry(baseDelay: .seconds(1), maxAttempts: 3)
@@ -69,6 +69,9 @@ public struct MassiveClient: Sendable {
         self.retry = retry
     }
 
+    /// The default Massive API endpoint.
+    public static let massiveAPIEndpoint = URL(string: "https://api.massive.com")!
+
     // MARK: - Internal Fetch
 
     func fetch<Query: APIQuery, Response: Decodable & Sendable>(_ query: Query) async throws -> Response {
@@ -79,11 +82,17 @@ public struct MassiveClient: Sendable {
         path: String,
         queryItems: [URLQueryItem]? = nil
     ) async throws -> T {
-        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
+        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true) else {
+            throw MassiveError.invalidURL
+        }
         components.path = path
         components.queryItems = queryItems
 
-        var request = URLRequest(url: components.url!)
+        guard let url = components.url else {
+            throw MassiveError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 
         return try await execute(request)

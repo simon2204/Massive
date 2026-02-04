@@ -16,13 +16,13 @@ import Foundation
 /// ```
 public struct InflationQuery: APIQuery {
     /// Calendar date of the observation (YYYY-MM-DD).
-    public var date: String?
+    public let date: String?
 
     /// Maximum results (default 100, max 50000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         date: String? = nil,

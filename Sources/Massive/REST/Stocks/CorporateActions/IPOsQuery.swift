@@ -19,25 +19,25 @@ import Foundation
 /// ```
 public struct IPOsQuery: APIQuery {
     /// The ticker symbol of the IPO.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Nine-character US code (CUSIP).
-    public var usCode: String?
+    public let usCode: String?
 
     /// International Securities Identification Number (ISIN).
-    public var isin: String?
+    public let isin: String?
 
     /// First trading date for the newly listed entity (YYYY-MM-DD).
-    public var listingDate: String?
+    public let listingDate: String?
 
     /// The current phase of the IPO.
-    public var ipoStatus: IPOStatus?
+    public let ipoStatus: IPOStatus?
 
     /// Limit the number of results (default 10, max 1000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction (e.g., "listing_date.desc").
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

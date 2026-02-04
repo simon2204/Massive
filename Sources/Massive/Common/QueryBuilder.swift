@@ -3,19 +3,19 @@ import Foundation
 
 /// A builder for constructing URL query items.
 ///
-/// Provides a fluent interface for adding optional parameters to API queries,
-/// reducing boilerplate code.
+/// Provides helpers for adding optional parameters to API queries,
+/// automatically skipping nil values.
 ///
 /// ## Usage
 ///
 /// ```swift
 /// var queryItems: [URLQueryItem]? {
-///     QueryBuilder()
-///         .add("ticker", ticker)
-///         .add("limit", limit)
-///         .add("order", order)
-///         .add("adjusted", adjusted)
-///         .build()
+///     var builder = QueryBuilder()
+///     builder.add("ticker", ticker)
+///     builder.add("limit", limit)
+///     builder.add("order", order)
+///     builder.add("adjusted", adjusted)
+///     return builder.build()
 /// }
 /// ```
 public struct QueryBuilder: Sendable {
@@ -24,66 +24,52 @@ public struct QueryBuilder: Sendable {
     public init() {}
 
     /// Adds a string parameter if not nil.
-    @discardableResult
-    public mutating func add(_ name: String, _ value: String?) -> Self {
+    public mutating func add(_ name: String, _ value: String?) {
         if let value {
             items.append(URLQueryItem(name: name, value: value))
         }
-        return self
     }
 
     /// Adds an integer parameter if not nil.
-    @discardableResult
-    public mutating func add(_ name: String, _ value: Int?) -> Self {
+    public mutating func add(_ name: String, _ value: Int?) {
         if let value {
             items.append(URLQueryItem(name: name, value: String(value)))
         }
-        return self
     }
 
     /// Adds a boolean parameter if not nil.
-    @discardableResult
-    public mutating func add(_ name: String, _ value: Bool?) -> Self {
+    public mutating func add(_ name: String, _ value: Bool?) {
         if let value {
             items.append(URLQueryItem(name: name, value: String(value)))
         }
-        return self
     }
 
     /// Adds a double parameter if not nil.
-    @discardableResult
-    public mutating func add(_ name: String, _ value: Double?) -> Self {
+    public mutating func add(_ name: String, _ value: Double?) {
         if let value {
             items.append(URLQueryItem(name: name, value: String(value)))
         }
-        return self
     }
 
     /// Adds a RawRepresentable parameter (enum) if not nil.
-    @discardableResult
-    public mutating func add<T: RawRepresentable>(_ name: String, _ value: T?) -> Self where T.RawValue == String {
+    public mutating func add<T: RawRepresentable>(_ name: String, _ value: T?) where T.RawValue == String {
         if let value {
             items.append(URLQueryItem(name: name, value: value.rawValue))
         }
-        return self
     }
 
     /// Adds a Ticker parameter if not nil.
-    @discardableResult
-    public mutating func add(_ name: String, _ value: Ticker?) -> Self {
+    public mutating func add(_ name: String, _ value: Ticker?) {
         if let value {
             items.append(URLQueryItem(name: name, value: value.symbol))
         }
-        return self
     }
 
     /// Adds a Timestamp parameter if not nil (as milliseconds since epoch).
-    @discardableResult
-    public mutating func add(_ name: String, _ value: Timestamp?) -> Self {
+    public mutating func add(_ name: String, _ value: Timestamp?) {
         if let value {
             items.append(URLQueryItem(name: name, value: String(value.millisecondsSinceEpoch)))
         }
-        return self
     }
 
     /// Returns the built query items, or nil if empty.

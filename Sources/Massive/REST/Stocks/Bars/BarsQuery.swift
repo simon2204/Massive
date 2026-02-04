@@ -45,14 +45,14 @@ public struct BarsQuery: APIQuery {
 
     /// Whether or not the results are adjusted for splits.
     /// By default, results are adjusted. Set to `false` to get unadjusted results.
-    public var adjusted: Bool?
+    public let adjusted: Bool?
 
     /// Sort the results by timestamp.
-    public var sort: SortOrder?
+    public let sort: SortOrder?
 
     /// Limits the number of base aggregates queried to create the aggregate results.
     /// Max 50000, default 5000.
-    public var limit: Int?
+    public let limit: Int?
 
     /// The size of the time window for aggregation.
     public enum Timespan: String, Sendable, CaseIterable {

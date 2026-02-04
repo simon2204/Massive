@@ -1,8 +1,9 @@
 import Fetch
 import Foundation
-import WebSocketKit
+import Logging
 import NIOCore
 import NIOPosix
+import WebSocketKit
 
 /// A WebSocket client for streaming real-time stock market data.
 ///
@@ -61,6 +62,9 @@ public actor MassiveWebSocket {
     /// JSON encoder for outgoing messages.
     private let encoder = JSONEncoder()
 
+    /// Logger for WebSocket operations.
+    private let logger: Logger
+
     /// Creates a new WebSocket client for stock data streaming.
     ///
     /// - Parameters:
@@ -68,13 +72,16 @@ public actor MassiveWebSocket {
     ///   - endpoint: The WebSocket endpoint URL. Defaults to real-time stocks.
     ///     Use `stocksDelayedEndpoint` for 15-minute delayed data.
     ///   - eventLoopGroup: Optional event loop group. If not provided, a new one is created.
+    ///   - logger: Optional logger for WebSocket operations. Defaults to a logger labeled "MassiveWebSocket".
     public init(
         apiKey: String,
         endpoint: String = MassiveWebSocket.stocksEndpoint,
-        eventLoopGroup: EventLoopGroup? = nil
+        eventLoopGroup: EventLoopGroup? = nil,
+        logger: Logger? = nil
     ) {
         self.apiKey = apiKey
         self.endpoint = endpoint
+        self.logger = logger ?? Logger(label: "MassiveWebSocket")
         if let group = eventLoopGroup {
             self.eventLoopGroup = group
             self.ownsEventLoopGroup = false
@@ -86,7 +93,11 @@ public actor MassiveWebSocket {
 
     deinit {
         if ownsEventLoopGroup {
-            try? eventLoopGroup.syncShutdownGracefully()
+            do {
+                try eventLoopGroup.syncShutdownGracefully()
+            } catch {
+                logger.error("Failed to shutdown event loop group: \(error)")
+            }
         }
     }
 
@@ -132,7 +143,11 @@ public actor MassiveWebSocket {
 
     /// Disconnects from the WebSocket.
     public func disconnect() async {
-        try? await webSocket?.close()
+        do {
+            try await webSocket?.close()
+        } catch {
+            logger.warning("Failed to close WebSocket gracefully: \(error)")
+        }
         webSocket = nil
         isAuthenticated = false
     }
@@ -256,6 +271,7 @@ public actor MassiveWebSocket {
                 }
             }
         } catch {
+            logger.debug("Failed to parse message with event type '\(eventType)': \(error)")
             return .unknown(eventType)
         }
     }
@@ -270,12 +286,22 @@ public actor MassiveWebSocket {
             if status.status == "connected" {
                 // Send authentication
                 let auth = AuthMessage(apiKey: apiKey)
-                try? await send(auth, on: ws)
+                do {
+                    try await send(auth, on: ws)
+                } catch {
+                    logger.error("Failed to send authentication: \(error)")
+                    continuation.finish(throwing: error)
+                    return
+                }
             } else if status.status == "auth_success" {
                 isAuthenticated = true
                 // Send pending subscriptions
                 for subscription in pendingSubscriptions {
-                    try? await send(subscription, on: ws)
+                    do {
+                        try await send(subscription, on: ws)
+                    } catch {
+                        logger.error("Failed to send subscription \(subscription.action) for \(subscription.params): \(error)")
+                    }
                 }
                 pendingSubscriptions.removeAll()
             }

@@ -16,31 +16,31 @@ import Foundation
 /// ```
 public struct BalanceSheetsQuery: APIQuery {
     /// Filter by ticker symbol(s).
-    public var tickers: String?
+    public let tickers: String?
 
     /// Company's SEC Central Index Key.
-    public var cik: String?
+    public let cik: String?
 
     /// Last date of the reporting period (YYYY-MM-DD).
-    public var periodEnd: String?
+    public let periodEnd: String?
 
     /// SEC filing date (YYYY-MM-DD).
-    public var filingDate: String?
+    public let filingDate: String?
 
     /// Fiscal year.
-    public var fiscalYear: Int?
+    public let fiscalYear: Int?
 
     /// Fiscal quarter (1, 2, 3, or 4).
-    public var fiscalQuarter: Int?
+    public let fiscalQuarter: Int?
 
     /// Reporting period type.
-    public var timeframe: FinancialTimeframe?
+    public let timeframe: FinancialTimeframe?
 
     /// Limit results (default 100, max 50000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         tickers: String? = nil,

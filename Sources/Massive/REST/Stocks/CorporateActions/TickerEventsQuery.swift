@@ -20,7 +20,7 @@ public struct TickerEventsQuery: APIQuery {
 
     /// Comma-separated list of event types to include.
     /// Currently supported: "ticker_change"
-    public var types: String?
+    public let types: String?
 
     public init(id: String, types: String? = nil) {
         self.id = id

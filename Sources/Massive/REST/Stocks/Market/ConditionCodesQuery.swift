@@ -16,25 +16,25 @@ import Foundation
 /// ```
 public struct ConditionCodesQuery: APIQuery {
     /// Filter by asset class.
-    public var assetClass: MarketAssetClass?
+    public let assetClass: MarketAssetClass?
 
     /// Filter by data type.
-    public var dataType: ConditionDataType?
+    public let dataType: ConditionDataType?
 
     /// Filter for a specific condition ID.
-    public var id: Int?
+    public let id: Int?
 
     /// Filter by SIP.
-    public var sip: SIPType?
+    public let sip: SIPType?
 
     /// Order results.
-    public var order: SortOrder?
+    public let order: SortOrder?
 
     /// Limit the number of results (default 10, max 1000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Field to sort by.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         assetClass: MarketAssetClass? = nil,

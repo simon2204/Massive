@@ -19,7 +19,7 @@ public struct PreviousDayBarQuery: APIQuery {
     public let ticker: Ticker
 
     /// Whether or not the results are adjusted for splits. Default is true.
-    public var adjusted: Bool?
+    public let adjusted: Bool?
 
     public init(ticker: Ticker, adjusted: Bool? = nil) {
         self.ticker = ticker

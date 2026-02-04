@@ -22,7 +22,7 @@ public struct DailyTickerSummaryQuery: APIQuery {
     public let date: String
 
     /// Whether or not the results are adjusted for splits. Default is true.
-    public var adjusted: Bool?
+    public let adjusted: Bool?
 
     public init(ticker: Ticker, date: String, adjusted: Bool? = nil) {
         self.ticker = ticker

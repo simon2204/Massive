@@ -20,10 +20,11 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://git.w-hs.de/Simon.Schoepke/fetch.git", branch: "main"),
-        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0"),
-        .package(url: "https://github.com/swiftlang/swift-docc-plugin.git", from: "1.0.0"),
-        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.8.0"),
-        .package(url: "https://github.com/vapor/websocket-kit.git", from: "2.16.0"),
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "4.2.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.9.1"),
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin.git", from: "1.4.5"),
+        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.8.6"),
+        .package(url: "https://github.com/vapor/websocket-kit.git", from: "2.16.1"),
     ],
     targets: [
         .target(
@@ -31,6 +32,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Fetch", package: "fetch"),
                 .product(name: "Crypto", package: "swift-crypto"),
+                .product(name: "Logging", package: "swift-log"),
                 .product(name: "SWCompression", package: "SWCompression"),
                 .product(name: "WebSocketKit", package: "websocket-kit"),
             ]
@@ -38,6 +40,6 @@ let package = Package(
         .testTarget(
             name: "MassiveTests",
             dependencies: ["Massive"]
-        ),
+        )
     ]
 )

@@ -204,29 +204,31 @@ enum ByteParsing {
         return result
     }
 
-    /// Parses an optional integer from ASCII bytes
+    /// Checks if bytes contain at least one digit character.
     @inline(__always)
-    static func optionalIntFromBytes(_ bytes: ArraySlice<UInt8>) -> Int? {
-        guard !bytes.isEmpty else { return nil }
-        // Check if it's just whitespace or empty
+    private static func containsDigit(_ bytes: ArraySlice<UInt8>) -> Bool {
         for byte in bytes {
             if byte >= asciiZero && byte <= asciiNine {
-                return intFromBytes(bytes)
+                return true
             }
         }
-        return nil
+        return false
     }
 
-    /// Parses an optional Int64 from ASCII bytes
+    /// Parses an optional integer from ASCII bytes.
+    /// Returns nil if empty or contains no digits.
+    @inline(__always)
+    static func optionalIntFromBytes(_ bytes: ArraySlice<UInt8>) -> Int? {
+        guard !bytes.isEmpty, containsDigit(bytes) else { return nil }
+        return intFromBytes(bytes)
+    }
+
+    /// Parses an optional Int64 from ASCII bytes.
+    /// Returns nil if empty or contains no digits.
     @inline(__always)
     static func optionalInt64FromBytes(_ bytes: ArraySlice<UInt8>) -> Int64? {
-        guard !bytes.isEmpty else { return nil }
-        for byte in bytes {
-            if byte >= asciiZero && byte <= asciiNine {
-                return int64FromBytes(bytes)
-            }
-        }
-        return nil
+        guard !bytes.isEmpty, containsDigit(bytes) else { return nil }
+        return int64FromBytes(bytes)
     }
 
     // MARK: - String Parsing

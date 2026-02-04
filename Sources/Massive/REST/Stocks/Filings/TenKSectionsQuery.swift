@@ -16,25 +16,25 @@ import Foundation
 /// ```
 public struct TenKSectionsQuery: APIQuery {
     /// SEC Central Index Key (10 digits, zero-padded).
-    public var cik: String?
+    public let cik: String?
 
     /// Stock ticker symbol.
-    public var ticker: String?
+    public let ticker: String?
 
     /// Standardized section identifier.
-    public var section: TenKSection?
+    public let section: TenKSection?
 
     /// Filing submission date (YYYY-MM-DD).
-    public var filingDate: String?
+    public let filingDate: String?
 
     /// Period end date (YYYY-MM-DD).
-    public var periodEnd: String?
+    public let periodEnd: String?
 
     /// Maximum results (default 100, max 9999).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction (e.g., "period_end.desc").
-    public var sort: String?
+    public let sort: String?
 
     public init(
         cik: String? = nil,

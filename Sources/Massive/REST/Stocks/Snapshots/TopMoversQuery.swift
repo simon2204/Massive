@@ -19,7 +19,7 @@ public struct TopMoversQuery: APIQuery {
     public let direction: MoverDirection
 
     /// Include OTC securities.
-    public var includeOtc: Bool?
+    public let includeOtc: Bool?
 
     public init(direction: MoverDirection, includeOtc: Bool? = nil) {
         self.direction = direction

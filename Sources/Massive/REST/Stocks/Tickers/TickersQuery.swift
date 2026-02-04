@@ -20,40 +20,40 @@ import Foundation
 /// ```
 public struct TickersQuery: APIQuery {
     /// Specify a ticker symbol. Defaults to empty string which queries all tickers.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Specify the type of the tickers. Find the types via the Ticker Types API.
-    public var type: String?
+    public let type: String?
 
     /// Filter by market type. By default all markets are included.
-    public var market: TickerMarket?
+    public let market: TickerMarket?
 
     /// Specify the asset's primary exchange Market Identifier Code (MIC) according to ISO 10383.
-    public var exchange: String?
+    public let exchange: String?
 
     /// Specify the CUSIP code of the asset you want to search for.
-    public var cusip: String?
+    public let cusip: String?
 
     /// Specify the CIK of the asset you want to search for.
-    public var cik: String?
+    public let cik: String?
 
     /// Specify a point in time to retrieve tickers available on that date.
-    public var date: String?
+    public let date: String?
 
     /// Search for terms within the ticker and/or company name.
-    public var search: String?
+    public let search: String?
 
     /// Specify if the tickers returned should be actively traded on the queried date.
-    public var active: Bool?
+    public let active: Bool?
 
     /// Order results based on the sort field.
-    public var order: SortOrder?
+    public let order: SortOrder?
 
     /// Limit the number of results returned. Default is 100, max is 1000.
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort field used for ordering.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

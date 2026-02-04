@@ -13,16 +13,16 @@ import Foundation
 /// ```
 public struct ShortInterestQuery: APIQuery {
     /// The ticker symbol.
-    public var ticker: Ticker?
+    public let ticker: Ticker?
 
     /// Settlement date (YYYY-MM-DD).
-    public var settlementDate: String?
+    public let settlementDate: String?
 
     /// Limit results (default 10, max 50000).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         ticker: Ticker? = nil,

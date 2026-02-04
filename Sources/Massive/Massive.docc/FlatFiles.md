@@ -32,31 +32,7 @@ let s3 = S3Client.massiveFlatFiles(credentials: credentials)
 
 Here's a complete example that downloads daily stock data and finds the top gainers:
 
-```swift
-import Massive
-
-// 1. Create the S3 client with your credentials
-let s3 = S3Client.massiveFlatFiles(credentials: S3Credentials(
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key"
-))
-
-// 2. Download and parse day aggregates
-let bars = try await s3.dayAggregates(for: .usStocks, date: "2025-01-15")
-
-// 3. Calculate daily returns and find top gainers
-let gainers = bars
-    .map { bar in
-        let returnPct = (bar.close - bar.open) / bar.open * 100
-        return (bar.ticker, returnPct, bar.volume)
-    }
-    .sorted { $0.1 > $1.1 }
-    .prefix(10)
-
-for (ticker, returnPct, volume) in gainers {
-    print("\(ticker): +\(String(format: "%.2f", returnPct))% (\(volume) shares)")
-}
-```
+@Snippet(path: "Massive/Snippets/FlatFiles")
 
 ## Downloading and Parsing Data
 

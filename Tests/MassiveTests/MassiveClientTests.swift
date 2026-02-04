@@ -111,8 +111,8 @@ struct MassiveClientTests {
         #expect(response?.adjusted == true)
         #expect(response?.resultsCount == 2)
         #expect(response?.results?.count == 2)
-        #expect(response?.results?[0].o == 150.0)
-        #expect(response?.results?[0].c == 154.0)
+        #expect(response?.results?[0].open == 150.0)
+        #expect(response?.results?[0].close == 154.0)
     }
 
     @Test("Bars query builds correct path")

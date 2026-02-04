@@ -16,19 +16,19 @@ import Foundation
 /// ```
 public struct RiskFactorsQuery: APIQuery {
     /// Filing submission date (YYYY-MM-DD).
-    public var filingDate: String?
+    public let filingDate: String?
 
     /// Stock ticker symbol.
-    public var ticker: String?
+    public let ticker: String?
 
     /// SEC Central Index Key (10 digits, zero-padded).
-    public var cik: String?
+    public let cik: String?
 
     /// Maximum results (default 100, max 49999).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         filingDate: String? = nil,

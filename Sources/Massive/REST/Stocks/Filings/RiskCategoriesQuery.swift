@@ -16,22 +16,22 @@ import Foundation
 /// ```
 public struct RiskCategoriesQuery: APIQuery {
     /// Taxonomy version identifier (e.g., "1.0", "1.1").
-    public var taxonomy: Double?
+    public let taxonomy: Double?
 
     /// Top-level risk category filter.
-    public var primaryCategory: String?
+    public let primaryCategory: String?
 
     /// Mid-level risk category filter.
-    public var secondaryCategory: String?
+    public let secondaryCategory: String?
 
     /// Most specific risk classification filter.
-    public var tertiaryCategory: String?
+    public let tertiaryCategory: String?
 
     /// Maximum results (default 200).
-    public var limit: Int?
+    public let limit: Int?
 
     /// Sort columns with direction.
-    public var sort: String?
+    public let sort: String?
 
     public init(
         taxonomy: Double? = nil,

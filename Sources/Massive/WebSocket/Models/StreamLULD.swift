@@ -18,8 +18,8 @@ public struct StreamLULD: Sendable, Decodable {
     /// Indicator codes signaling price band events.
     public let indicators: [Int]?
 
-    /// The tape (1 = NYSE, 2 = AMEX, 3 = Nasdaq).
-    public let tape: Int
+    /// The tape indicating the primary listing exchange.
+    public let tape: Tape
 
     /// The timestamp.
     public let timestamp: Timestamp
@@ -45,7 +45,7 @@ public struct StreamLULD: Sendable, Decodable {
         highLimit = try container.decode(Double.self, forKey: .highLimit)
         lowLimit = try container.decode(Double.self, forKey: .lowLimit)
         indicators = try container.decodeIfPresent([Int].self, forKey: .indicators)
-        tape = try container.decode(Int.self, forKey: .tape)
+        tape = try container.decode(Tape.self, forKey: .tape)
         let timestampMs = try container.decode(Int64.self, forKey: .timestamp)
         timestamp = Timestamp(millisecondsSinceEpoch: timestampMs)
         sequenceNumber = try container.decode(Int64.self, forKey: .sequenceNumber)

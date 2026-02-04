@@ -16,10 +16,10 @@ import Foundation
 /// ```
 public struct FullMarketSnapshotQuery: APIQuery {
     /// Filter to tickers that contain this search string.
-    public var tickers: [Ticker]?
+    public let tickers: [Ticker]?
 
     /// Include OTC securities.
-    public var includeOtc: Bool?
+    public let includeOtc: Bool?
 
     public init(tickers: [Ticker]? = nil, includeOtc: Bool? = nil) {
         self.tickers = tickers

@@ -27,34 +27,34 @@ public struct MACDQuery: APIQuery {
     public let ticker: Ticker
 
     /// Query by timestamp.
-    public var timestamp: Timestamp?
+    public let timestamp: Timestamp?
 
     /// The size of the aggregate time window.
-    public var timespan: IndicatorTimespan?
+    public let timespan: IndicatorTimespan?
 
     /// Whether or not the results are adjusted for splits. Default is true.
-    public var adjusted: Bool?
+    public let adjusted: Bool?
 
     /// The short window size for MACD calculation.
-    public var shortWindow: Int?
+    public let shortWindow: Int?
 
     /// The long window size for MACD calculation.
-    public var longWindow: Int?
+    public let longWindow: Int?
 
     /// The signal window size for MACD signal line calculation.
-    public var signalWindow: Int?
+    public let signalWindow: Int?
 
     /// The price component to use for calculation.
-    public var seriesType: SeriesType?
+    public let seriesType: SeriesType?
 
     /// Include the aggregates used to calculate the indicator.
-    public var expandUnderlying: Bool?
+    public let expandUnderlying: Bool?
 
     /// Order results by timestamp.
-    public var order: SortOrder?
+    public let order: SortOrder?
 
     /// Limit the number of results (default 10, max 5000).
-    public var limit: Int?
+    public let limit: Int?
 
     public init(
         ticker: Ticker,

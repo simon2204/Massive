@@ -39,8 +39,8 @@ public struct StreamQuote: Sendable, Decodable {
     /// The sequence number.
     public let sequenceNumber: Int64
 
-    /// The tape (1 = NYSE, 2 = AMEX, 3 = Nasdaq).
-    public let tape: Int
+    /// The tape indicating the primary listing exchange.
+    public let tape: Tape
 
     enum CodingKeys: String, CodingKey {
         case eventType = "ev"
@@ -73,6 +73,6 @@ public struct StreamQuote: Sendable, Decodable {
         let timestampMs = try container.decode(Int64.self, forKey: .timestamp)
         timestamp = Timestamp(millisecondsSinceEpoch: timestampMs)
         sequenceNumber = try container.decode(Int64.self, forKey: .sequenceNumber)
-        tape = try container.decode(Int.self, forKey: .tape)
+        tape = try container.decode(Tape.self, forKey: .tape)
     }
 }

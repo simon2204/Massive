@@ -16,10 +16,10 @@ import Foundation
 /// ```
 public struct TickerTypesQuery: APIQuery {
     /// Filter by asset class.
-    public var assetClass: TickerAssetClass?
+    public let assetClass: TickerAssetClass?
 
     /// Filter by locale.
-    public var locale: TickerLocale?
+    public let locale: TickerLocale?
 
     public init(assetClass: TickerAssetClass? = nil, locale: TickerLocale? = nil) {
         self.assetClass = assetClass

@@ -15,8 +15,8 @@ public struct StreamTrade: Sendable, Decodable {
     /// The trade ID.
     public let tradeId: String
 
-    /// The tape (1 = NYSE, 2 = AMEX, 3 = Nasdaq).
-    public let tape: Int
+    /// The tape indicating the primary listing exchange.
+    public let tape: Tape
 
     /// The trade price.
     public let price: Double
@@ -60,7 +60,7 @@ public struct StreamTrade: Sendable, Decodable {
         symbol = try container.decode(String.self, forKey: .symbol)
         exchange = try container.decode(Int.self, forKey: .exchange)
         tradeId = try container.decode(String.self, forKey: .tradeId)
-        tape = try container.decode(Int.self, forKey: .tape)
+        tape = try container.decode(Tape.self, forKey: .tape)
         price = try container.decode(Double.self, forKey: .price)
         size = try container.decode(Int.self, forKey: .size)
         conditions = try container.decodeIfPresent([Int].self, forKey: .conditions)

@@ -85,6 +85,7 @@ let trades = try await s3.trades(for: .usStocks, date: "2025-01-15")
 ### Essentials
 
 - <doc:GettingStarted>
+- <doc:AdvancedTopics>
 - <doc:FlatFiles>
 
 ### REST API Client

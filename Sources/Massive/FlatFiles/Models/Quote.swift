@@ -64,12 +64,8 @@ public struct Quote: Sendable, Hashable {
     /// The SIP (Securities Information Processor) timestamp.
     public let sipTimestamp: Timestamp
 
-    /// The tape identifier.
-    ///
-    /// - 1: NYSE listed
-    /// - 2: NYSE ARCA/American listed
-    /// - 3: NASDAQ listed
-    public let tape: Int
+    /// The tape indicating the primary listing exchange.
+    public let tape: Tape
 
     /// The TRF timestamp with nanosecond precision.
     public let trfTimestamp: Timestamp?
@@ -88,7 +84,7 @@ public struct Quote: Sendable, Hashable {
         participantTimestamp: Timestamp,
         sequenceNumber: Int,
         sipTimestamp: Timestamp,
-        tape: Int,
+        tape: Tape,
         trfTimestamp: Timestamp? = nil
     ) {
         self.ticker = ticker
