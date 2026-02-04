@@ -42,9 +42,9 @@ struct S3Signer: Sendable {
             return request
         }
 
-        // Format dates
-        let amzDate = Self.amzDateFormatter.string(from: date)
-        let dateStamp = Self.dateStampFormatter.string(from: date)
+        // Format dates (AWS requires specific formats in UTC)
+        let amzDate = date.formatted(Self.amzDateFormat)
+        let dateStamp = date.formatted(Self.dateStampFormat)
 
         // Calculate payload hash (empty for GET requests)
         let payload = request.httpBody ?? Data()
@@ -158,25 +158,21 @@ struct S3Signer: Sendable {
             .joined(separator: "&")
     }
 
-    // MARK: - Date Formatters
+    // MARK: - Date Formats
 
-    /// ISO 8601 date formatter for x-amz-date header (e.g., "20130524T000000Z").
-    private static let amzDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
+    /// Format for x-amz-date header (e.g., "20130524T000000Z").
+    private static let amzDateFormat = Date.VerbatimFormatStyle(
+        format: "\(year: .defaultDigits)\(month: .twoDigits)\(day: .twoDigits)T\(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased))\(minute: .twoDigits)\(second: .twoDigits)Z",
+        timeZone: .gmt,
+        calendar: Calendar(identifier: .iso8601)
+    )
 
-    /// Date stamp formatter for credential scope (e.g., "20130524").
-    private static let dateStampFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
+    /// Format for credential scope date stamp (e.g., "20130524").
+    private static let dateStampFormat = Date.VerbatimFormatStyle(
+        format: "\(year: .defaultDigits)\(month: .twoDigits)\(day: .twoDigits)",
+        timeZone: .gmt,
+        calendar: Calendar(identifier: .iso8601)
+    )
 }
 
 // MARK: - Data Extension

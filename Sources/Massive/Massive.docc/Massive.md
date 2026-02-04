@@ -4,17 +4,24 @@ A Swift client for the Massive API providing access to financial market data.
 
 ## Overview
 
-Massive is a Swift package that provides a type-safe interface to the Massive API. It supports fetching market news with sentiment analysis and historical OHLC (Open, High, Low, Close) bar data for stocks.
+Massive is a Swift package that provides a type-safe interface to the Massive API. It supports:
 
-### Features
+- **REST API**: Market news with sentiment analysis and historical OHLC bar data
+- **Flat Files**: Bulk historical data via S3-compatible storage
 
-- News articles with sentiment analysis
-- Historical OHLC bar data with customizable time intervals
-- Automatic pagination support
-- Rate limiting and retry logic
-- Swift 6 concurrency support
+The library is designed with Swift 6 concurrency in mind, using `async`/`await` throughout and ensuring all types are `Sendable`.
 
-### Quick Start
+## Getting Started
+
+Add Massive to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/your-org/Massive.git", from: "1.0.0")
+]
+```
+
+### REST API Quick Start
 
 ```swift
 import Massive
@@ -38,9 +45,43 @@ for bar in bars.results ?? [] {
 }
 ```
 
+### Flat Files Quick Start
+
+For bulk historical data, use the S3 client:
+
+```swift
+import Massive
+
+let credentials = S3Credentials(
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key"
+)
+let s3 = S3Client.massiveFlatFiles(credentials: credentials)
+
+// List available files
+let result = try await s3.listFlatFiles(
+    assetClass: "us_stocks_sip",
+    dataType: "minute_aggs_v1",
+    year: 2025,
+    month: 1
+)
+
+// Download a file
+let data = try await s3.downloadFlatFile(
+    assetClass: "us_stocks_sip",
+    dataType: "minute_aggs_v1",
+    date: "2025-01-02"
+)
+```
+
 ## Topics
 
-### Client
+### Essentials
+
+- <doc:GettingStarted>
+- <doc:FlatFiles>
+
+### REST API Client
 
 - ``MassiveClient``
 - ``MassiveError``
@@ -49,11 +90,22 @@ for bar in bars.results ?? [] {
 
 - ``NewsQuery``
 - ``NewsResponse``
+- ``NewsArticle``
 
-### Bars
+### Bars (OHLC Data)
 
 - ``BarsQuery``
 - ``BarsResponse``
+- ``Bar``
+
+### S3 Flat Files
+
+- ``S3Client``
+- ``S3Credentials``
+- ``S3ListResult``
+- ``S3Object``
+- ``S3ObjectMetadata``
+- ``S3Error``
 
 ### Protocols
 

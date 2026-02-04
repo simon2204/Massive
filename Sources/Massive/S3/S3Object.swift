@@ -45,7 +45,7 @@ public enum S3Error: Error, Sendable {
 // MARK: - XML Parsing
 
 /// Parser for S3 ListBucketResult XML responses.
-final class S3ListResultParser: NSObject, XMLParserDelegate, @unchecked Sendable {
+final class S3ListResultParser: NSObject, XMLParserDelegate {
     private var objects: [S3Object] = []
     private var isTruncated = false
     private var nextContinuationToken: String?
@@ -62,17 +62,11 @@ final class S3ListResultParser: NSObject, XMLParserDelegate, @unchecked Sendable
     private var currentText = ""
     private var inContents = false
 
-    private nonisolated(unsafe) static let iso8601Formatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-
-    private nonisolated(unsafe) static let iso8601FormatterNoFraction: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter
-    }()
+    /// ISO8601 parse strategy with fractional seconds.
+    private static let iso8601WithFraction = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+    
+    /// ISO8601 parse strategy without fractional seconds.
+    private static let iso8601NoFraction = Date.ISO8601FormatStyle(includingFractionalSeconds: false)
 
     /// Parses S3 ListBucketResult XML data.
     func parse(_ data: Data) throws -> S3ListResult {
@@ -123,7 +117,7 @@ final class S3ListResultParser: NSObject, XMLParserDelegate, @unchecked Sendable
                     key: key,
                     size: size,
                     lastModified: lastModified,
-                    etag: etag.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                    etag: etag.replacing("\"", with: "")
                 ))
             }
             inContents = false
@@ -135,8 +129,11 @@ final class S3ListResultParser: NSObject, XMLParserDelegate, @unchecked Sendable
             currentSize = Int(text)
 
         case "LastModified" where inContents:
-            currentLastModified = Self.iso8601Formatter.date(from: text)
-                ?? Self.iso8601FormatterNoFraction.date(from: text)
+            if let date = try? Self.iso8601WithFraction.parse(text) {
+                currentLastModified = date
+            } else {
+                currentLastModified = try? Self.iso8601NoFraction.parse(text)
+            }
 
         case "ETag" where inContents:
             currentETag = text
@@ -161,7 +158,7 @@ final class S3ListResultParser: NSObject, XMLParserDelegate, @unchecked Sendable
 }
 
 /// Parser for S3 error responses.
-final class S3ErrorParser: NSObject, XMLParserDelegate, @unchecked Sendable {
+final class S3ErrorParser: NSObject, XMLParserDelegate {
     private var code: String?
     private var message: String?
     private var currentElement = ""

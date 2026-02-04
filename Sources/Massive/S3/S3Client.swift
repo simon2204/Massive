@@ -234,9 +234,9 @@ public struct S3Client: Sendable {
             let contentLength = httpResponse.value(forHTTPHeaderField: "Content-Length")
                 .flatMap { Int($0) } ?? 0
             let lastModified = httpResponse.value(forHTTPHeaderField: "Last-Modified")
-                .flatMap { Self.httpDateFormatter.date(from: $0) }
+                .flatMap { try? Self.httpDateStrategy.parse($0) }
             let etag = httpResponse.value(forHTTPHeaderField: "ETag")?
-                .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                .replacing("\"", with: "")
             let contentType = httpResponse.value(forHTTPHeaderField: "Content-Type")
 
             return S3ObjectMetadata(
@@ -255,13 +255,12 @@ public struct S3Client: Sendable {
 
     // MARK: - Private
 
-    private static let httpDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(identifier: "GMT")
-        return formatter
-    }()
+    /// HTTP date format strategy (RFC 7231): "Tue, 15 Nov 1994 08:12:31 GMT"
+    private static let httpDateStrategy = Date.VerbatimFormatStyle(
+        format: "\(weekday: .abbreviated), \(day: .twoDigits) \(month: .abbreviated) \(year: .defaultDigits) \(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits):\(second: .twoDigits) \(timeZone: .identifier(.short))",
+        timeZone: .gmt,
+        calendar: Calendar(identifier: .iso8601)
+    ).parseStrategy
 }
 
 /// Metadata for an S3 object (from HEAD request).

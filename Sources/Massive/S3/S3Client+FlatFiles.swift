@@ -4,26 +4,28 @@ import Foundation
 import FoundationNetworking
 #endif
 
-extension MassiveClient {
-    /// The default Massive Flat Files endpoint.
-    public static let flatFilesEndpoint = URL(string: "https://files.massive.com")!
+// MARK: - Massive Flat Files
 
-    /// The default Massive Flat Files bucket name.
-    public static let flatFilesBucket = "flatfiles"
+extension S3Client {
+    /// The Massive Flat Files endpoint.
+    public static let massiveFlatFilesEndpoint = URL(string: "https://files.massive.com")!
 
-    /// Creates an S3 client configured for Massive Flat Files.
+    /// The Massive Flat Files bucket name.
+    public static let massiveFlatFilesBucket = "flatfiles"
+
+    /// Creates an S3 client for Massive Flat Files.
     ///
-    /// This is a convenience method that creates an `S3Client` with the correct
-    /// endpoint and bucket for accessing Massive Flat Files.
+    /// This factory method configures the client with the Massive Flat Files
+    /// endpoint and bucket. You only need to provide your S3 credentials.
     ///
     /// ## Usage
     ///
     /// ```swift
-    /// let massiveClient = MassiveClient(apiKey: "...")
-    /// let s3 = massiveClient.flatFiles(credentials: S3Credentials(
+    /// let credentials = S3Credentials(
     ///     accessKeyId: "your-access-key",
     ///     secretAccessKey: "your-secret-key"
-    /// ))
+    /// )
+    /// let s3 = S3Client.massiveFlatFiles(credentials: credentials)
     ///
     /// // List available data
     /// let result = try await s3.list(prefix: "us_stocks_sip/")
@@ -32,36 +34,17 @@ extension MassiveClient {
     /// let data = try await s3.download(key: "us_stocks_sip/trades_v1/2025/11/2025-11-05.csv.gz")
     /// ```
     ///
-    /// - Parameter credentials: Your S3 credentials from the Massive dashboard.
-    /// - Returns: An S3 client configured for Massive Flat Files.
-    public func flatFiles(credentials: S3Credentials) -> S3Client {
-        S3Client(
-            endpoint: Self.flatFilesEndpoint,
-            bucket: Self.flatFilesBucket,
-            credentials: credentials,
-            session: session
-        )
-    }
-}
-
-// MARK: - Massive Flat Files Convenience Methods
-
-extension S3Client {
-    /// Creates an S3 client for Massive Flat Files.
-    ///
-    /// This is a convenience initializer that configures the client with
-    /// the Massive Flat Files endpoint and bucket.
-    ///
     /// - Parameters:
     ///   - credentials: Your S3 credentials from the Massive dashboard.
     ///   - session: The URLSession to use (default: `.shared`).
+    /// - Returns: An S3 client configured for Massive Flat Files.
     public static func massiveFlatFiles(
         credentials: S3Credentials,
         session: URLSession = .shared
     ) -> S3Client {
         S3Client(
-            endpoint: MassiveClient.flatFilesEndpoint,
-            bucket: MassiveClient.flatFilesBucket,
+            endpoint: massiveFlatFilesEndpoint,
+            bucket: massiveFlatFilesBucket,
             credentials: credentials,
             session: session
         )
@@ -120,16 +103,7 @@ extension S3Client {
         dataType: String,
         date: String
     ) async throws -> Data {
-        // Parse date to get year/month
-        let components = date.split(separator: "-")
-        guard components.count >= 2 else {
-            throw S3Error.invalidResponse
-        }
-
-        let year = components[0]
-        let month = components[1]
-        let key = "\(assetClass)/\(dataType)/\(year)/\(month)/\(date).csv.gz"
-
+        let key = try flatFileKey(assetClass: assetClass, dataType: dataType, date: date)
         return try await download(key: key)
     }
 
@@ -146,6 +120,13 @@ extension S3Client {
         date: String,
         to destination: URL
     ) async throws {
+        let key = try flatFileKey(assetClass: assetClass, dataType: dataType, date: date)
+        try await download(key: key, to: destination)
+    }
+
+    // MARK: - Private
+
+    private func flatFileKey(assetClass: String, dataType: String, date: String) throws -> String {
         let components = date.split(separator: "-")
         guard components.count >= 2 else {
             throw S3Error.invalidResponse
@@ -153,8 +134,6 @@ extension S3Client {
 
         let year = components[0]
         let month = components[1]
-        let key = "\(assetClass)/\(dataType)/\(year)/\(month)/\(date).csv.gz"
-
-        try await download(key: key, to: destination)
+        return "\(assetClass)/\(dataType)/\(year)/\(month)/\(date).csv.gz"
     }
 }

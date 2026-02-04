@@ -1,5 +1,5 @@
 {
-  "originHash" : "9950104663a3a594a66fb4734fb499527143d1fa1cf7b646e2873ddfb3c833b2",
+  "originHash" : "faba7b5e4e76e0c7a77dea513a7656911bf6541ef289579ec6340aa991e4a58e",
   "pins" : [
     {
       "identity" : "fetch",
@@ -44,6 +44,24 @@
       "state" : {
         "revision" : "95ba0316a9b733e92bb6b071255ff46263bbe7dc",
         "version" : "3.15.1"
+      }
+    },
+    {
+      "identity" : "swift-docc-plugin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-docc-plugin.git",
+      "state" : {
+        "revision" : "3e4f133a77e644a5812911a0513aeb7288b07d06",
+        "version" : "1.4.5"
+      }
+    },
+    {
+      "identity" : "swift-docc-symbolkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-docc-symbolkit",
+      "state" : {
+        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
+        "version" : "1.0.0"
       }
     },
     {
