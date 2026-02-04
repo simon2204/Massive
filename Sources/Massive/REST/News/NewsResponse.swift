@@ -3,19 +3,19 @@ import Foundation
 /// Response from the News endpoint.
 public struct NewsResponse: Codable, PaginatedResponse {
     /// The total number of results for this request.
-    public let count: Int
+    public let count: Int?
 
     /// If present, this value can be used to fetch the next page of data.
     public let nextUrl: String?
 
     /// A request ID assigned by the server.
-    public let requestId: String
+    public let requestId: String?
 
     /// An array of news article results.
-    public let results: [NewsArticle]
+    public let results: [NewsArticle]?
 
     /// The status of this request's response.
-    public let status: String
+    public let status: String?
 }
 
 /// A news article with metadata, sentiment analysis, and source details.
@@ -23,26 +23,14 @@ public struct NewsArticle: Codable, Sendable, Identifiable {
     /// Unique identifier for the article.
     public let id: String
 
-    /// The mobile friendly Accelerated Mobile Page (AMP) URL.
-    public let ampUrl: String?
+    /// The title of the news article.
+    public let title: String
 
     /// A link to the news article.
     public let articleUrl: String
 
     /// The article's author.
-    public let author: String?
-
-    /// A description of the article.
-    public let description: String?
-
-    /// The article's image URL.
-    public let imageUrl: String?
-
-    /// The insights related to the article, including sentiment analysis.
-    public let insights: [NewsInsight]?
-
-    /// The keywords associated with the article (varies by publishing source).
-    public let keywords: [String]?
+    public let author: String
 
     /// The UTC date and time when the article was published (RFC3339 format).
     public let publishedUtc: String
@@ -51,22 +39,34 @@ public struct NewsArticle: Codable, Sendable, Identifiable {
     public let publisher: NewsPublisher
 
     /// The ticker symbols associated with the article.
-    public let tickers: [String]?
+    public let tickers: [Ticker]
 
-    /// The title of the news article.
-    public let title: String
+    /// A description of the article.
+    public let description: String?
+
+    /// The article's image URL.
+    public let imageUrl: String?
+
+    /// The mobile friendly Accelerated Mobile Page (AMP) URL.
+    public let ampUrl: String?
+
+    /// The keywords associated with the article (varies by publishing source).
+    public let keywords: [String]?
+
+    /// The insights related to the article, including sentiment analysis.
+    public let insights: [NewsInsight]?
 }
 
 /// Sentiment analysis insight for a ticker mentioned in an article.
 public struct NewsInsight: Codable, Sendable {
-    /// The sentiment classification (e.g., "positive", "negative", "neutral").
-    public let sentiment: String
+    /// The sentiment classification.
+    public let sentiment: Sentiment
 
     /// The reasoning behind the sentiment classification.
     public let sentimentReasoning: String
 
     /// The ticker symbol this insight relates to.
-    public let ticker: String
+    public let ticker: Ticker
 }
 
 /// Details about the publisher of a news article.

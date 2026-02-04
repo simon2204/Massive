@@ -21,6 +21,7 @@ struct MassiveClientTests {
                 "id": "article-1",
                 "title": "Apple announces new iPhone",
                 "article_url": "https://example.com/article1",
+                "author": "John Doe",
                 "published_utc": "2024-01-15T10:00:00Z",
                 "publisher": { "name": "Tech News" },
                 "tickers": ["AAPL"]
@@ -29,6 +30,7 @@ struct MassiveClientTests {
                 "id": "article-2",
                 "title": "Apple stock rises",
                 "article_url": "https://example.com/article2",
+                "author": "Jane Smith",
                 "published_utc": "2024-01-15T11:00:00Z",
                 "publisher": { "name": "Finance Daily" },
                 "tickers": ["AAPL"]
@@ -47,9 +49,9 @@ struct MassiveClientTests {
         let response = try await client.news(NewsQuery(ticker: "AAPL"))
 
         #expect(response.count == 2)
-        #expect(response.results.count == 2)
-        #expect(response.results[0].title == "Apple announces new iPhone")
-        #expect(response.results[1].publisher.name == "Finance Daily")
+        #expect(response.results?.count == 2)
+        #expect(response.results?[0].title == "Apple announces new iPhone")
+        #expect(response.results?[1].publisher.name == "Finance Daily")
     }
 
     @Test("News query builds correct URL parameters")

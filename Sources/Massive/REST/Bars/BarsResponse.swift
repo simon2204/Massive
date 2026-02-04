@@ -3,7 +3,7 @@ import Foundation
 /// Response from the Custom Bars (OHLC) endpoint.
 public struct BarsResponse: Codable, PaginatedResponse {
     /// The exchange symbol that this item is traded under.
-    public let ticker: String
+    public let ticker: Ticker
 
     /// Whether or not this response was adjusted for splits.
     public let adjusted: Bool
