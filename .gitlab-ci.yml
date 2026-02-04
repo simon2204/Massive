@@ -2,7 +2,7 @@ pages:
   stage: deploy
   script:
     - mkdir -p public
-    - cp -r docs/* public/
+    - cp -r docs-gitlab/* public/
   artifacts:
     paths:
       - public
