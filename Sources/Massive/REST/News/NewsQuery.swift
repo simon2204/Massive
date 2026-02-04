@@ -23,25 +23,23 @@ import Foundation
 /// )
 /// ```
 public struct NewsQuery: APIQuery {
-    public var path: String { "/v2/reference/news" }
-
-    /// Case-sensitive ticker symbol (e.g., "AAPL" for Apple Inc.).
-    public var ticker: String?
+    /// The ticker symbol (e.g., "AAPL" for Apple Inc.).
+    public var ticker: Ticker?
 
     /// Return results published on, before, or after this date.
     public var publishedUtc: String?
 
     /// Search by ticker greater than or equal to this value.
-    public var tickerGte: String?
+    public var tickerGte: Ticker?
 
     /// Search by ticker greater than this value.
-    public var tickerGt: String?
+    public var tickerGt: Ticker?
 
     /// Search by ticker less than or equal to this value.
-    public var tickerLte: String?
+    public var tickerLte: Ticker?
 
     /// Search by ticker less than this value.
-    public var tickerLt: String?
+    public var tickerLt: Ticker?
 
     /// Return results published on or after this date.
     public var publishedUtcGte: String?
@@ -56,7 +54,7 @@ public struct NewsQuery: APIQuery {
     public var publishedUtcLt: String?
 
     /// Order results based on the `sort` field.
-    public var order: Order?
+    public var order: SortOrder?
 
     /// Limit the number of results returned. Default is 10, max is 1000.
     public var limit: Int?
@@ -64,26 +62,18 @@ public struct NewsQuery: APIQuery {
     /// Sort field used for ordering.
     public var sort: String?
 
-    /// Order direction for results.
-    public enum Order: String, Sendable {
-        /// Ascending order.
-        case asc
-        /// Descending order.
-        case desc
-    }
-
     public init(
-        ticker: String? = nil,
+        ticker: Ticker? = nil,
         publishedUtc: String? = nil,
-        tickerGte: String? = nil,
-        tickerGt: String? = nil,
-        tickerLte: String? = nil,
-        tickerLt: String? = nil,
+        tickerGte: Ticker? = nil,
+        tickerGt: Ticker? = nil,
+        tickerLte: Ticker? = nil,
+        tickerLt: Ticker? = nil,
         publishedUtcGte: String? = nil,
         publishedUtcGt: String? = nil,
         publishedUtcLte: String? = nil,
         publishedUtcLt: String? = nil,
-        order: Order? = nil,
+        order: SortOrder? = nil,
         limit: Int? = nil,
         sort: String? = nil
     ) {
@@ -102,23 +92,25 @@ public struct NewsQuery: APIQuery {
         self.sort = sort
     }
 
+    public var path: String {
+        "/v2/reference/news"
+    }
+
     public var queryItems: [URLQueryItem]? {
-        var items: [URLQueryItem] = []
-
-        if let ticker { items.append(URLQueryItem(name: "ticker", value: ticker)) }
-        if let publishedUtc { items.append(URLQueryItem(name: "published_utc", value: publishedUtc)) }
-        if let tickerGte { items.append(URLQueryItem(name: "ticker.gte", value: tickerGte)) }
-        if let tickerGt { items.append(URLQueryItem(name: "ticker.gt", value: tickerGt)) }
-        if let tickerLte { items.append(URLQueryItem(name: "ticker.lte", value: tickerLte)) }
-        if let tickerLt { items.append(URLQueryItem(name: "ticker.lt", value: tickerLt)) }
-        if let publishedUtcGte { items.append(URLQueryItem(name: "published_utc.gte", value: publishedUtcGte)) }
-        if let publishedUtcGt { items.append(URLQueryItem(name: "published_utc.gt", value: publishedUtcGt)) }
-        if let publishedUtcLte { items.append(URLQueryItem(name: "published_utc.lte", value: publishedUtcLte)) }
-        if let publishedUtcLt { items.append(URLQueryItem(name: "published_utc.lt", value: publishedUtcLt)) }
-        if let order { items.append(URLQueryItem(name: "order", value: order.rawValue)) }
-        if let limit { items.append(URLQueryItem(name: "limit", value: String(limit))) }
-        if let sort { items.append(URLQueryItem(name: "sort", value: sort)) }
-
-        return items.isEmpty ? nil : items
+        var builder = QueryBuilder()
+        builder.add("ticker", ticker)
+        builder.add("published_utc", publishedUtc)
+        builder.add("ticker.gte", tickerGte)
+        builder.add("ticker.gt", tickerGt)
+        builder.add("ticker.lte", tickerLte)
+        builder.add("ticker.lt", tickerLt)
+        builder.add("published_utc.gte", publishedUtcGte)
+        builder.add("published_utc.gt", publishedUtcGt)
+        builder.add("published_utc.lte", publishedUtcLte)
+        builder.add("published_utc.lt", publishedUtcLt)
+        builder.add("order", order)
+        builder.add("limit", limit)
+        builder.add("sort", sort)
+        return builder.build()
     }
 }

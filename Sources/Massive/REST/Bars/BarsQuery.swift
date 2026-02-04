@@ -26,8 +26,8 @@ import Foundation
 /// )
 /// ```
 public struct BarsQuery: APIQuery {
-    /// Case-sensitive ticker symbol (e.g., "AAPL" for Apple Inc.).
-    public let ticker: String
+    /// The ticker symbol (e.g., "AAPL" for Apple Inc.).
+    public let ticker: Ticker
 
     /// The size of the timespan multiplier (e.g., 5 for 5-minute bars).
     public let multiplier: Int
@@ -48,14 +48,14 @@ public struct BarsQuery: APIQuery {
     public var adjusted: Bool?
 
     /// Sort the results by timestamp.
-    public var sort: Sort?
+    public var sort: SortOrder?
 
     /// Limits the number of base aggregates queried to create the aggregate results.
     /// Max 50000, default 5000.
     public var limit: Int?
 
     /// The size of the time window for aggregation.
-    public enum Timespan: String, Sendable {
+    public enum Timespan: String, Sendable, CaseIterable {
         case second
         case minute
         case hour
@@ -66,22 +66,14 @@ public struct BarsQuery: APIQuery {
         case year
     }
 
-    /// Sort order for results by timestamp.
-    public enum Sort: String, Sendable {
-        /// Ascending order (oldest at the top).
-        case asc
-        /// Descending order (newest at the top).
-        case desc
-    }
-
     public init(
-        ticker: String,
+        ticker: Ticker,
         multiplier: Int = 1,
         timespan: Timespan = .day,
         from: String,
         to: String,
         adjusted: Bool? = nil,
-        sort: Sort? = nil,
+        sort: SortOrder? = nil,
         limit: Int? = nil
     ) {
         self.ticker = ticker
@@ -95,16 +87,14 @@ public struct BarsQuery: APIQuery {
     }
 
     public var path: String {
-        "/v2/aggs/ticker/\(ticker)/range/\(multiplier)/\(timespan.rawValue)/\(from)/\(to)"
+        "/v2/aggs/ticker/\(ticker.symbol)/range/\(multiplier)/\(timespan.rawValue)/\(from)/\(to)"
     }
 
     public var queryItems: [URLQueryItem]? {
-        var items: [URLQueryItem] = []
-
-        if let adjusted { items.append(URLQueryItem(name: "adjusted", value: String(adjusted))) }
-        if let sort { items.append(URLQueryItem(name: "sort", value: sort.rawValue)) }
-        if let limit { items.append(URLQueryItem(name: "limit", value: String(limit))) }
-
-        return items.isEmpty ? nil : items
+        var builder = QueryBuilder()
+        builder.add("adjusted", adjusted)
+        builder.add("sort", sort)
+        builder.add("limit", limit)
+        return builder.build()
     }
 }
